@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 5.3//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-5.3.dtd">
+
+<hibernate-configuration>
+    <session-factory>
+
+ <!-- Conexión a la BD Videojuegos -->
+        <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/videojuegos_db?useSSL=false&amp;serverTimezone=UTC</property>
+        <property name="hibernate.connection.username">root</property>
+        <property name="hibernate.connection.password">root</property>
+
+        <!-- Dialecto -->
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQL8Dialect</property>
+
+        <!-- Opciones -->
+        <property name="hibernate.hbm2ddl.auto">validate</property>
+        <property name="hibernate.show_sql">true</property>
+
+        <!-- Entidades -->
+        <mapping class="Modelo.Usuario"/>
+        <mapping class="Modelo.Videojuego"/>
+        <mapping class="Modelo.Favorito"/>
+
+    </session-factory>
+</hibernate-configuration>
+
+
+
+
+
+       
