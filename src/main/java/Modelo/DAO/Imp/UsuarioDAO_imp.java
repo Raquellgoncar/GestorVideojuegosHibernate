@@ -18,7 +18,7 @@ import java.util.List;
  * @author Raquel
  */
 public class UsuarioDAO_imp implements UsuarioDAO {
-    
+
     @Override
     public void insert(Usuario u) {
         Transaction tx = null;
@@ -27,7 +27,9 @@ public class UsuarioDAO_imp implements UsuarioDAO {
             s.save(u);
             tx.commit();
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             e.printStackTrace();
         }
     }
@@ -40,7 +42,9 @@ public class UsuarioDAO_imp implements UsuarioDAO {
             s.update(u);
             tx.commit();
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             e.printStackTrace();
         }
     }
@@ -56,7 +60,9 @@ public class UsuarioDAO_imp implements UsuarioDAO {
             }
             tx.commit();
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             e.printStackTrace();
         }
     }
@@ -75,8 +81,19 @@ public class UsuarioDAO_imp implements UsuarioDAO {
                     "FROM Usuario u WHERE u.username = :username",
                     Usuario.class
             ).setParameter("username", username)
-             .uniqueResult();
+                    .uniqueResult();
         }
+    }
+
+    @Override
+    public Usuario fetchByEmail(String email) {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        Usuario usuario = session
+                .createQuery("FROM Usuario WHERE email = :email", Usuario.class)
+                .setParameter("email", email)
+                .uniqueResult();
+        session.close();
+        return usuario;
     }
 
     @Override

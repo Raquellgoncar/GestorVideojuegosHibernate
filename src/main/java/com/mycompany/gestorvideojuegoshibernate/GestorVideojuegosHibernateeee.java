@@ -12,7 +12,7 @@ import Modelo.util.PasswordService;
  *
  * @author Raquel
  */
-public class GestorVideojuegosHibernate {
+public class GestorVideojuegosHibernateeee {
 
     public static void main(String[] args) {
         UsuarioDAO uDao = new UsuarioDAO_imp();

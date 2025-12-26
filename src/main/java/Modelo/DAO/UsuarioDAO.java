@@ -22,6 +22,8 @@ public interface UsuarioDAO {
     Usuario fetchOne(int id);
 
     Usuario fetchByUsername(String username);
+    
+    Usuario fetchByEmail(String email);
 
     List<Usuario> fetchAll();
 
