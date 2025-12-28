@@ -2,7 +2,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-
 package Modelo;
 
 import java.io.Serializable;
@@ -28,17 +27,17 @@ import javax.persistence.Table;
 @Table(name = "videojuegos")
 @NamedQueries({
     @NamedQuery(name = "Videojuego.findAll",
-                query = "SELECT v FROM Videojuego v"),
+            query = "SELECT v FROM Videojuego v"),
     @NamedQuery(name = "Videojuego.findById",
-                query = "SELECT v FROM Videojuego v WHERE v.id = :id"),
+            query = "SELECT v FROM Videojuego v WHERE v.id = :id"),
     @NamedQuery(name = "Videojuego.findByTitulo",
-                query = "SELECT v FROM Videojuego v WHERE v.titulo = :titulo"),
+            query = "SELECT v FROM Videojuego v WHERE v.titulo = :titulo"),
     @NamedQuery(name = "Videojuego.findByPlataforma",
-                query = "SELECT v FROM Videojuego v WHERE v.plataforma = :plataforma"),
+            query = "SELECT v FROM Videojuego v WHERE v.plataforma = :plataforma"),
     @NamedQuery(name = "Videojuego.findByAnio",
-                query = "SELECT v FROM Videojuego v WHERE v.anio = :anio"),
+            query = "SELECT v FROM Videojuego v WHERE v.anio = :anio"),
     @NamedQuery(name = "Videojuego.findByValoracion",
-                query = "SELECT v FROM Videojuego v WHERE v.valoracion = :valoracion")
+            query = "SELECT v FROM Videojuego v WHERE v.valoracion = :valoracion")
 })
 public class Videojuego implements Serializable {
 
@@ -67,8 +66,6 @@ public class Videojuego implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "videojuegoId")
     private Collection<Favorito> favoritoCollection;
 
- 
-
     public Videojuego() {
     }
 
@@ -81,7 +78,6 @@ public class Videojuego implements Serializable {
         this.titulo = titulo;
         this.plataforma = plataforma;
     }
-
 
     public Integer getId() {
         return id;
@@ -131,7 +127,6 @@ public class Videojuego implements Serializable {
         this.favoritoCollection = favoritoCollection;
     }
 
-
     @Override
     public int hashCode() {
         int hash = 0;
@@ -151,6 +146,8 @@ public class Videojuego implements Serializable {
 
     @Override
     public String toString() {
-        return "Modelo.Videojuego[ id=" + id + " ]";
+        return titulo + " | "
+                + plataforma + " | "
+                + anio + " | " + valoracion;
     }
 }

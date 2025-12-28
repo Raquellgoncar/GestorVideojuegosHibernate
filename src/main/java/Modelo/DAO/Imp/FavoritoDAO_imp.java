@@ -25,7 +25,9 @@ public class FavoritoDAO_imp implements FavoritoDAO {
             s.save(f);
             tx.commit();
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             e.printStackTrace();
         }
     }
@@ -41,7 +43,31 @@ public class FavoritoDAO_imp implements FavoritoDAO {
             }
             tx.commit();
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void deleteByUsuarioYVideojuego(int usuarioId, int videojuegoId) {
+        Transaction tx = null;
+        try (Session s = HibernateUtil.getSessionFactory().openSession()) {
+            tx = s.beginTransaction();
+
+            s.createQuery(
+                    "DELETE FROM Favorito f WHERE f.usuarioId.id = :uid AND f.videojuegoId.id = :vid"
+            )
+                    .setParameter("uid", usuarioId)
+                    .setParameter("vid", videojuegoId)
+                    .executeUpdate();
+
+            tx.commit();
+        } catch (Exception e) {
+            if (tx != null) {
+                tx.rollback();
+            }
             e.printStackTrace();
         }
     }
@@ -67,7 +93,7 @@ public class FavoritoDAO_imp implements FavoritoDAO {
                     "FROM Favorito f WHERE f.usuarioId.id = :id",
                     Favorito.class
             ).setParameter("id", usuarioId)
-             .list();
+                    .list();
         }
     }
 }

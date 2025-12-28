@@ -16,6 +16,8 @@ public interface FavoritoDAO {
     void insert(Favorito f);
 
     void delete(int id);
+    
+    void deleteByUsuarioYVideojuego(int usuarioId, int videojuegoId);
 
     Favorito fetchOne(int id);
 

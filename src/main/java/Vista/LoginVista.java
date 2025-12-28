@@ -12,6 +12,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import com.formdev.flatlaf.FlatLightLaf;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -26,8 +30,8 @@ public class LoginVista extends JFrame {
     private JButton btnRecuperar;
     private Image imagenFondo;
 
-   
     private UsuarioDAO usuarioDAO = new UsuarioDAO_imp();
+    private ResourceBundle texts;
 
     public LoginVista() {
         setTitle("Checkpoint - Login");
@@ -36,17 +40,20 @@ public class LoginVista extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(true);
 
-        var url = getClass().getResource("/img/imagenFondo.png");
+        // 🔹 Forzar idioma (cambia a "es" o "en" para probar)
+        Locale.setDefault(new Locale("en"));
+        texts = ResourceBundle.getBundle("i18n.messages");
 
-        if (url == null) {
+        var url = getClass().getResource("/img/imagenFondo.png");
+        if (url != null) {
+            imagenFondo = new ImageIcon(url).getImage();
+        } else {
             JOptionPane.showMessageDialog(
                     this,
                     "No se encuentra la imagen /img/imagenFondo.png",
                     "Error",
                     JOptionPane.ERROR_MESSAGE
             );
-        } else {
-            imagenFondo = new ImageIcon(url).getImage();
         }
 
         initComponents();
@@ -58,7 +65,9 @@ public class LoginVista extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                g.drawImage(imagenFondo, 0, 0, getWidth(), getHeight(), this);
+                if (imagenFondo != null) {
+                    g.drawImage(imagenFondo, 0, 0, getWidth(), getHeight(), this);
+                }
             }
         };
         setContentPane(root);
@@ -75,7 +84,7 @@ public class LoginVista extends JFrame {
         gbc.insets = new Insets(60, 0, 0, 0);
         root.add(panel, gbc);
 
-        /* ---------- TÍTULO ---------- */
+        /* ---------- TÍTULO (NO TRADUCIR) ---------- */
         JLabel lblTitulo = new JLabel("CheckPoint", SwingConstants.CENTER);
         lblTitulo.setFont(new Font("Wide Latin", Font.PLAIN, 40));
         lblTitulo.setForeground(Color.WHITE);
@@ -88,26 +97,26 @@ public class LoginVista extends JFrame {
         /* ---------- USERNAME ---------- */
         txtUsername = new JTextField();
         txtUsername.setMaximumSize(new Dimension(280, 32));
-        addPlaceholder(txtUsername, "Username");
+        addPlaceholder(txtUsername, texts.getString("login.username"));
 
         panel.add(txtUsername);
         panel.add(Box.createRigidArea(new Dimension(0, 18)));
 
-        /* ---------- CONTRASEÑA ---------- */
+        /* ---------- PASSWORD ---------- */
         txtPassword = new JPasswordField();
         txtPassword.setMaximumSize(new Dimension(280, 32));
-        addPasswordPlaceholder(txtPassword, "Contraseña");
+        addPasswordPlaceholder(txtPassword, texts.getString("login.password"));
 
         panel.add(txtPassword);
         panel.add(Box.createRigidArea(new Dimension(0, 14)));
 
         /* ---------- RECUPERAR ---------- */
-        JLabel lblOlvidado = new JLabel("¿Has olvidado la contraseña?");
+        JLabel lblOlvidado = new JLabel(texts.getString("login.forgot"));
         lblOlvidado.setFont(new Font("Arial", Font.BOLD, 11));
         lblOlvidado.setForeground(Color.WHITE);
         lblOlvidado.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        btnRecuperar = crearBotonLilaSuave("Recuperar contraseña");
+        btnRecuperar = crearBotonLilaSuave(texts.getString("login.recover"));
         btnRecuperar.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnRecuperar.addActionListener(e -> {
             RecuperarContraseniaDialog dialog = new RecuperarContraseniaDialog(this);
@@ -120,7 +129,7 @@ public class LoginVista extends JFrame {
         panel.add(Box.createRigidArea(new Dimension(0, 20)));
 
         /* ---------- ACCEDER ---------- */
-        btnAcceder = crearBotonMorado("Acceder");
+        btnAcceder = crearBotonMorado(texts.getString("login.access"));
         btnAcceder.setFont(new Font("Segoe UI Black", Font.PLAIN, 20));
         btnAcceder.setMaximumSize(new Dimension(280, 40));
         btnAcceder.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -130,12 +139,12 @@ public class LoginVista extends JFrame {
         panel.add(Box.createRigidArea(new Dimension(0, 18)));
 
         /* ---------- REGISTRO ---------- */
-        JLabel lblRegistro = new JLabel("¿No tienes cuenta?");
+        JLabel lblRegistro = new JLabel(texts.getString("login.noaccount"));
         lblRegistro.setFont(new Font("Arial", Font.BOLD, 13));
         lblRegistro.setForeground(Color.WHITE);
         lblRegistro.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        btnRegistrar = crearBotonMorado("Registrarse");
+        btnRegistrar = crearBotonMorado(texts.getString("login.register"));
         btnRegistrar.setFont(new Font("Segoe UI Black", Font.PLAIN, 20));
         btnRegistrar.setMaximumSize(new Dimension(280, 40));
         btnRegistrar.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -147,6 +156,8 @@ public class LoginVista extends JFrame {
         panel.add(lblRegistro);
         panel.add(Box.createRigidArea(new Dimension(0, 5)));
         panel.add(btnRegistrar);
+
+        SwingUtilities.invokeLater(() -> root.requestFocusInWindow());
     }
 
     /* ---------- LOGIN ---------- */
@@ -155,53 +166,45 @@ public class LoginVista extends JFrame {
         String username = txtUsername.getText().trim();
         String password = new String(txtPassword.getPassword()).trim();
 
-        if (username.isEmpty() || username.equals("Username")) {
-            JOptionPane.showMessageDialog(this,
-                    "Introduce el nombre de usuario",
+        if (username.isEmpty() || username.equals(texts.getString("login.username"))) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    texts.getString("error.username"),
                     "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
 
-        if (password.isEmpty() || password.equals("Contraseña")) {
-            JOptionPane.showMessageDialog(this,
-                    "Introduce la contraseña",
+        if (password.isEmpty() || password.equals(texts.getString("login.password"))) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    texts.getString("error.password"),
                     "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
 
         Usuario usuario = usuarioDAO.fetchByUsername(username);
 
-        if (usuario == null) {
-            JOptionPane.showMessageDialog(this,
-                    "Usuario o contraseña incorrectos",
+        if (usuario == null || !PasswordService.verifyPassword(password, usuario.getPasswordHash())) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    texts.getString("error.login"),
                     "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
-
-        if (!PasswordService.verifyPassword(password, usuario.getPasswordHash())) {
-            JOptionPane.showMessageDialog(this,
-                    "Usuario o contraseña incorrectos",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        JOptionPane.showMessageDialog(this,
-                "Bienvenido/a " + usuario.getNombre(),
-                "Acceso correcto",
-                JOptionPane.INFORMATION_MESSAGE);
 
         abrirPantallaPrincipal(usuario);
         dispose();
     }
 
-    /* ---------- SIGUIENTE PANTALLA (TEMPORAL) ---------- */
     private void abrirPantallaPrincipal(Usuario usuario) {
-        System.out.println("Usuario logueado: " + usuario.getUsername());
-        // new PantallaPrincipal(usuario).setVisible(true);
+        new MenuPrincipalVista(usuario).setVisible(true);
+        dispose();
     }
 
     /* ---------- PLACEHOLDERS ---------- */
@@ -307,8 +310,8 @@ public class LoginVista extends JFrame {
             }
         };
 
-        boton.setFont(new Font("Arial", Font.BOLD, 13));
-        boton.setForeground(Color.BLACK);
+        boton.setFont(new Font("Segoe UI Black", Font.PLAIN, 12));
+        boton.setForeground(new Color(140, 80, 190));
         boton.setFocusPainted(false);
         boton.setBorder(BorderFactory.createLineBorder(new Color(160, 110, 210)));
         boton.setContentAreaFilled(false);
@@ -320,6 +323,7 @@ public class LoginVista extends JFrame {
     }
 
     public static void main(String[] args) {
+        FlatLightLaf.setup();
         SwingUtilities.invokeLater(() -> new LoginVista().setVisible(true));
     }
 }
