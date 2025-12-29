@@ -22,4 +22,6 @@ public interface VideojuegoDAO {
     Videojuego fetchOne(int id);
 
     List<Videojuego> fetchAll();
+    
+    List<Videojuego> fetchByUsuario(int idUsuario);
 }

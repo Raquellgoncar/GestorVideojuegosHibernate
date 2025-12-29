@@ -4,14 +4,12 @@
  */
 package Vista;
 
-import Modelo.Usuario;
-import Modelo.DAO.UsuarioDAO;
-import Modelo.DAO.Imp.UsuarioDAO_imp;
-import Modelo.util.PasswordService;
+import Controlador.RegistroController;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
+import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 
 
 /**
@@ -27,13 +25,14 @@ public class RegistroDialog extends JDialog {
     private JButton btnRegistrar;
     private JButton btnCancelar;
 
-    private UsuarioDAO usuarioDAO = new UsuarioDAO_imp();
+    private RegistroController registroController;
     private ResourceBundle texts;
 
     public RegistroDialog(JFrame parent) {
         super(parent, true);
 
         texts = ResourceBundle.getBundle("i18n.messages");
+        registroController = new RegistroController();
 
         setTitle(texts.getString("register.title"));
         setSize(420, 300);
@@ -106,7 +105,7 @@ public class RegistroDialog extends JDialog {
         btnRegistrar = new JButton(texts.getString("register.button"));
         btnRegistrar.setPreferredSize(new Dimension(130, 34));
         btnRegistrar.setFont(new Font("Arial", Font.BOLD, 13));
-        
+
         getRootPane().setDefaultButton(btnRegistrar);
 
         gbc.gridx = 1;
@@ -118,7 +117,6 @@ public class RegistroDialog extends JDialog {
         btnRegistrar.addActionListener(e -> registrarUsuario());
     }
 
-    // ---------------- LÓGICA DE REGISTRO ----------------
     private void registrarUsuario() {
 
         String username = txtUsername.getText().trim();
@@ -126,7 +124,7 @@ public class RegistroDialog extends JDialog {
         String email = txtEmail.getText().trim();
         String password = String.valueOf(txtPassword.getPassword());
 
-        // 1. CAMPOS VACÍOS
+        // CAMPOS VACÍOS 
         if (username.isEmpty() || nombre.isEmpty() || email.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(
                     this,
@@ -137,7 +135,7 @@ public class RegistroDialog extends JDialog {
             return;
         }
 
-        // 2. EMAIL VÁLIDO
+        //  EMAIL VÁLIDO 
         if (!Pattern.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$", email)) {
             JOptionPane.showMessageDialog(
                     this,
@@ -148,44 +146,35 @@ public class RegistroDialog extends JDialog {
             return;
         }
 
-        // 3. USERNAME EXISTENTE
-        if (usuarioDAO.fetchByUsername(username) != null) {
+        try {
+            registroController.registrar(username, nombre, email, password);
+
             JOptionPane.showMessageDialog(
                     this,
-                    texts.getString("register.error.username.exists"),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
+                    texts.getString("register.success.message"),
+                    texts.getString("register.success.title"),
+                    JOptionPane.INFORMATION_MESSAGE
             );
-            return;
+
+            dispose();
+
+        } catch (IllegalArgumentException ex) {
+
+            if ("USERNAME_EXISTE".equals(ex.getMessage())) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        texts.getString("register.error.username.exists"),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            } else if ("EMAIL_EXISTE".equals(ex.getMessage())) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        texts.getString("register.error.email.exists"),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
         }
-
-        // 4. EMAIL EXISTENTE
-        if (usuarioDAO.fetchByEmail(email) != null) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    texts.getString("register.error.email.exists"),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
-            return;
-        }
-
-        // 5. CREAR USUARIO
-        Usuario u = new Usuario();
-        u.setUsername(username);
-        u.setNombre(nombre);
-        u.setEmail(email);
-        u.setPasswordHash(PasswordService.hashPassword(password));
-
-        usuarioDAO.insert(u);
-
-        JOptionPane.showMessageDialog(
-                this,
-                texts.getString("register.success.message"),
-                texts.getString("register.success.title"),
-                JOptionPane.INFORMATION_MESSAGE
-        );
-
-        dispose();
     }
 }

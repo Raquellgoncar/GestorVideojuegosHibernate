@@ -78,4 +78,21 @@ public class VideojuegoDAO_imp implements VideojuegoDAO {
             return s.createQuery("FROM Videojuego", Videojuego.class).list();
         }
     }
+
+    @Override
+    public List<Videojuego> fetchByUsuario(int idUsuario) {
+
+        Session session = HibernateUtil.getSessionFactory().openSession();
+
+        List<Videojuego> lista = session.createQuery(
+                "FROM Videojuego v WHERE v.usuario.id = :idUsuario",
+                Videojuego.class
+        )
+                .setParameter("idUsuario", idUsuario)
+                .getResultList();
+
+        session.close();
+        return lista;
+    }
+
 }

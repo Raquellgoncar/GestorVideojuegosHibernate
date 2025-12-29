@@ -4,22 +4,20 @@
  */
 package Vista;
 
+import Controlador.MenuPrincipalController;
 import Modelo.Usuario;
 import javax.swing.*;
 import java.awt.*;
-import Vista.LoginVista;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.*;
 import java.awt.event.*;
 import java.util.ResourceBundle;
-import javax.swing.*;
+
 
 /**
  *
  * @author Raquel
- */
-public class MenuPrincipalVista extends JFrame {
+ */public class MenuPrincipalVista extends JFrame {
 
     private JButton btnMostrar, btnModificar, btnFavoritos, btnPerfil, btnAtras;
     private JLabel lblTitulo;
@@ -30,11 +28,15 @@ public class MenuPrincipalVista extends JFrame {
     private ImageIcon fondoGif;
 
     private ResourceBundle texts;
+    private MenuPrincipalController controller;
 
     public MenuPrincipalVista(Usuario usuario) {
         this.usuario = usuario;
 
         texts = ResourceBundle.getBundle("i18n.messages");
+
+        controller = new MenuPrincipalController(usuario);
+        controller.setVista(this);
 
         setTitle(texts.getString("menu.title"));
         setSize(700, 500);
@@ -99,35 +101,19 @@ public class MenuPrincipalVista extends JFrame {
 
         btnMostrar = crearBoton(texts.getString("menu.show"));
         btnMostrar.setToolTipText("Ver el listado de videojuegos");
+        btnMostrar.addActionListener(e -> controller.mostrarListado());
 
         btnModificar = crearBoton(texts.getString("menu.modify"));
         btnModificar.setToolTipText("Modificar o eliminar videojuegos");
+        btnModificar.addActionListener(e -> controller.modificarVideojuegos());
 
         btnFavoritos = crearBoton(texts.getString("menu.favorites"));
         btnFavoritos.setToolTipText("Ver tus videojuegos favoritos");
+        btnFavoritos.addActionListener(e -> controller.mostrarFavoritos());
 
         btnPerfil = crearBoton(texts.getString("menu.profile"));
         btnPerfil.setToolTipText("Ver y editar tu perfil");
-
-        btnMostrar.addActionListener(e -> {
-            new ListadoVideojuegosVista(usuario).setVisible(true);
-            dispose();
-        });
-
-        btnModificar.addActionListener(e -> {
-            new ModificarVideojuegosVista(usuario).setVisible(true);
-            dispose();
-        });
-
-        btnFavoritos.addActionListener(e -> {
-            new MostrarFavoritosVista(usuario).setVisible(true);
-            dispose();
-        });
-
-        btnPerfil.addActionListener(e -> {
-            new PerfilVista(usuario).setVisible(true);
-            dispose();
-        });
+        btnPerfil.addActionListener(e -> controller.mostrarPerfil());
 
         panelCentral.add(btnMostrar);
         panelCentral.add(Box.createRigidArea(new Dimension(0, 40)));
@@ -147,10 +133,7 @@ public class MenuPrincipalVista extends JFrame {
         btnAtras = new JButton(texts.getString("menu.back"));
         btnAtras.setFocusPainted(false);
         btnAtras.setToolTipText("Cerrar sesión y volver al login");
-        btnAtras.addActionListener(e -> {
-            new LoginVista().setVisible(true);
-            dispose();
-        });
+        btnAtras.addActionListener(e -> controller.cerrarSesion());
 
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -270,7 +253,3 @@ public class MenuPrincipalVista extends JFrame {
         return boton;
     }
 }
-
-
-
-

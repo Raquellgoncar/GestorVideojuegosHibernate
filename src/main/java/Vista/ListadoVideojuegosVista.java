@@ -4,9 +4,8 @@
  */
 package Vista;
 
+import Controlador.ListadoVideojuegosController;
 import Modelo.Videojuego;
-import Modelo.DAO.VideojuegoDAO;
-import Modelo.DAO.Imp.VideojuegoDAO_imp;
 import Modelo.Usuario;
 import javax.swing.*;
 import java.awt.*;
@@ -24,16 +23,21 @@ public class ListadoVideojuegosVista extends JFrame {
     private Usuario usuario;
     private JTable tabla;
     private DefaultTableModel modelo;
-    private VideojuegoDAO videojuegoDAO;
 
     private Image imagenFondo;
     private ResourceBundle texts;
 
+    private JLabel lblTotal;
+
+    private ListadoVideojuegosController controller;
+
     public ListadoVideojuegosVista(Usuario usuario) {
         this.usuario = usuario;
-        this.videojuegoDAO = new VideojuegoDAO_imp();
 
         texts = ResourceBundle.getBundle("i18n.messages");
+
+        controller = new ListadoVideojuegosController(usuario);
+        controller.setVista(this);
 
         setTitle(texts.getString("list.window.title"));
         setSize(700, 400);
@@ -130,7 +134,17 @@ public class ListadoVideojuegosVista extends JFrame {
         panelIzq.setOpaque(false);
         panelIzq.add(btnAtras);
 
+        lblTotal = new JLabel();
+        lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblTotal.setForeground(Color.WHITE);
+
+        JPanel panelDer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        panelDer.setOpaque(false);
+        panelDer.add(lblTotal);
+
         panelSur.add(panelIzq, BorderLayout.WEST);
+        panelSur.add(panelDer, BorderLayout.EAST);
+
         root.add(panelSur, BorderLayout.SOUTH);
     }
 
@@ -168,10 +182,7 @@ public class ListadoVideojuegosVista extends JFrame {
         boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         boton.setPreferredSize(new Dimension(120, 30));
 
-        boton.addActionListener(e -> {
-            new MenuPrincipalVista(usuario).setVisible(true);
-            dispose();
-        });
+        boton.addActionListener(e -> controller.volverMenu());
 
         return boton;
     }
@@ -181,17 +192,27 @@ public class ListadoVideojuegosVista extends JFrame {
 
         modelo.setRowCount(0);
 
-        List<Videojuego> videojuegos = videojuegoDAO.fetchAll();
-        if (videojuegos == null || videojuegos.isEmpty()) return;
+        List<Videojuego> videojuegos = controller.obtenerVideojuegos();
+        int total = 0;
 
-        for (Videojuego v : videojuegos) {
-            modelo.addRow(new Object[]{
-                    v.getTitulo(),
-                    v.getPlataforma(),
-                    v.getAnio(),
-                    v.getValoracion()
-            });
+        if (videojuegos != null && !videojuegos.isEmpty()) {
+            for (Videojuego v : videojuegos) {
+                modelo.addRow(new Object[]{
+                        v.getTitulo(),
+                        v.getPlataforma(),
+                        v.getAnio(),
+                        v.getValoracion()
+                });
+                total++;
+            }
         }
+
+        lblTotal.setText(
+                texts.getString("list.total.prefix") +
+                " " + usuario.getNombre() + ": " +
+                total
+        );
     }
 }
+
 

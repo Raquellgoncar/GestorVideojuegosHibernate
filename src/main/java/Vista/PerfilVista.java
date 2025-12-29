@@ -4,10 +4,7 @@
  */
 package Vista;
 
-import Modelo.DAO.Imp.UsuarioDAO_imp;
-import Modelo.DAO.Imp.VideojuegoDAO_imp;
-import Modelo.DAO.UsuarioDAO;
-import Modelo.DAO.VideojuegoDAO;
+import Controlador.PerfilController;
 import Modelo.Usuario;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -22,7 +19,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.RenderingHints;
-import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -30,8 +26,11 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+
+
 
 /**
  *
@@ -40,19 +39,19 @@ import javax.swing.SwingConstants;
 public class PerfilVista extends JFrame {
 
     private Usuario usuario;
+    private PerfilController controller;
 
     private JLabel lblNombreValor;
     private JLabel lblTotalNumero;
-
-    private UsuarioDAO usuarioDAO = new UsuarioDAO_imp();
-    private VideojuegoDAO videojuegoDAO = new VideojuegoDAO_imp();
 
     private ResourceBundle texts;
 
     public PerfilVista(Usuario usuario) {
         this.usuario = usuario;
+        this.texts = ResourceBundle.getBundle("i18n.messages");
 
-        texts = ResourceBundle.getBundle("i18n.messages");
+        controller = new PerfilController(usuario);
+        controller.setVista(this);
 
         setTitle(texts.getString("profile.window.title"));
         setSize(650, 520);
@@ -68,16 +67,13 @@ public class PerfilVista extends JFrame {
 
         setLayout(new BorderLayout());
 
-        /* ================= PANEL CENTRAL ================= */
         JPanel root = new JPanel(new GridBagLayout());
         root.setBorder(BorderFactory.createEmptyBorder(30, 40, 20, 40));
         add(root, BorderLayout.CENTER);
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.WEST;
 
-        /* ================= TÍTULO ================= */
         JLabel lblTitulo = new JLabel(
                 texts.getString("profile.title"),
                 SwingConstants.CENTER
@@ -97,7 +93,7 @@ public class PerfilVista extends JFrame {
         Font fuenteLabel = new Font("Arial", Font.BOLD, 15);
         Font fuenteDato = new Font("Arial", Font.PLAIN, 15);
 
-        /* ================= NOMBRE ================= */
+        /* ===== NOMBRE ===== */
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.insets = new Insets(8, 0, 12, 20);
@@ -123,7 +119,7 @@ public class PerfilVista extends JFrame {
 
         gbc.anchor = GridBagConstraints.WEST;
 
-        /* ================= USERNAME ================= */
+        /* ===== USERNAME ===== */
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.insets = new Insets(18, 0, 12, 20);
@@ -137,10 +133,9 @@ public class PerfilVista extends JFrame {
         lblUserValor.setFont(fuenteDato);
         root.add(lblUserValor, gbc);
 
-        /* ================= EMAIL ================= */
+        /* ===== EMAIL ===== */
         gbc.gridy++;
         gbc.gridx = 0;
-        gbc.insets = new Insets(18, 0, 12, 20);
 
         JLabel lblEmail = new JLabel(texts.getString("profile.email") + ":");
         lblEmail.setFont(fuenteLabel);
@@ -151,12 +146,24 @@ public class PerfilVista extends JFrame {
         lblEmailValor.setFont(fuenteDato);
         root.add(lblEmailValor, gbc);
 
-        /* ================= TOTAL JUEGOS ================= */
+        /* ===== CAMBIAR PASSWORD ===== */
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.gridwidth = 3;
-        gbc.insets = new Insets(50, 0, 6, 0);
+        gbc.insets = new Insets(35, 0, 10, 0);
         gbc.anchor = GridBagConstraints.CENTER;
+
+        JButton btnCambiarPass = crearBotonMorado(
+                texts.getString("profile.change.password"),
+                new Dimension(280, 44)
+        );
+        btnCambiarPass.setFont(new Font("Segoe UI Black", Font.PLAIN, 16));
+        btnCambiarPass.addActionListener(e -> cambiarContrasena());
+        root.add(btnCambiarPass, gbc);
+
+        /* ===== TOTAL JUEGOS ===== */
+        gbc.gridy++;
+        gbc.insets = new Insets(25, 0, 6, 0);
 
         JLabel lblTotalTexto = new JLabel(
                 texts.getString("profile.total.text") + ":"
@@ -165,13 +172,11 @@ public class PerfilVista extends JFrame {
         root.add(lblTotalTexto, gbc);
 
         gbc.gridy++;
-        gbc.insets = new Insets(6, 0, 0, 0);
-
         lblTotalNumero = new JLabel("0");
         lblTotalNumero.setFont(new Font("Arial", Font.BOLD, 30));
         root.add(lblTotalNumero, gbc);
 
-        /* ================= PANEL INFERIOR ================= */
+        /* ===== ATRÁS ===== */
         JPanel panelInferior = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panelInferior.setBorder(BorderFactory.createEmptyBorder(10, 25, 15, 25));
         panelInferior.setOpaque(false);
@@ -180,71 +185,39 @@ public class PerfilVista extends JFrame {
                 texts.getString("profile.back"),
                 new Dimension(120, 32)
         );
-        btnAtras.addActionListener(e -> {
-            new MenuPrincipalVista(usuario).setVisible(true);
-            dispose();
-        });
+        btnAtras.addActionListener(e -> controller.volverMenu());
 
         panelInferior.add(btnAtras);
         add(panelInferior, BorderLayout.SOUTH);
     }
 
-    /* ================= TOTAL JUEGOS ================= */
+    /* ===== DATOS ===== */
+
     private void cargarTotalJuegos() {
-        int total = videojuegoDAO.fetchAll().size();
-        lblTotalNumero.setText(String.valueOf(total));
+        lblTotalNumero.setText(
+                String.valueOf(controller.obtenerTotalJuegos())
+        );
     }
 
-    /* ================= EDITAR NOMBRE ================= */
+    /* ===== EDITAR NOMBRE ===== */
+
     private void editarNombre() {
 
         JTextField txtNombre = new JTextField(usuario.getNombre());
-        txtNombre.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
-        Object[] contenido = {
-            texts.getString("profile.edit.dialog.label"),
-            txtNombre
-        };
-
-        int opcion = JOptionPane.showOptionDialog(
+        int opcion = JOptionPane.showConfirmDialog(
                 this,
-                contenido,
+                txtNombre,
                 texts.getString("profile.edit.dialog.title"),
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                new String[]{
-                    texts.getString("profile.back"),
-                    "OK"
-                },
-                "OK"
+                JOptionPane.OK_CANCEL_OPTION
         );
 
-        if (opcion != 1) return;
+        if (opcion != JOptionPane.OK_OPTION) return;
 
         String nuevoNombre = txtNombre.getText().trim();
-        String nombreAntiguo = usuario.getNombre();
+        if (nuevoNombre.isEmpty() || nuevoNombre.equals(usuario.getNombre())) return;
 
-        if (nuevoNombre.isEmpty() || nuevoNombre.equals(nombreAntiguo)) return;
-
-        String mensajeConfirmacion = MessageFormat.format(
-                texts.getString("profile.edit.confirm.text"),
-                nombreAntiguo,
-                nuevoNombre
-        );
-
-        int confirmar = JOptionPane.showConfirmDialog(
-                this,
-                mensajeConfirmacion,
-                texts.getString("profile.edit.confirm.title"),
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE
-        );
-
-        if (confirmar != JOptionPane.YES_OPTION) return;
-
-        usuario.setNombre(nuevoNombre);
-        usuarioDAO.update(usuario);
+        controller.actualizarNombre(nuevoNombre);
         lblNombreValor.setText(nuevoNombre);
 
         JOptionPane.showMessageDialog(
@@ -255,7 +228,36 @@ public class PerfilVista extends JFrame {
         );
     }
 
-    /* ================= BOTÓN MORADO ================= */
+    /* ===== CAMBIAR PASSWORD ===== */
+
+    private void cambiarContrasena() {
+
+        JPasswordField txtPassword = new JPasswordField();
+
+        int opcion = JOptionPane.showConfirmDialog(
+                this,
+                txtPassword,
+                texts.getString("profile.password.title"),
+                JOptionPane.OK_CANCEL_OPTION
+        );
+
+        if (opcion != JOptionPane.OK_OPTION) return;
+
+        String nuevaPassword = new String(txtPassword.getPassword()).trim();
+        if (nuevaPassword.isEmpty()) return;
+
+        controller.actualizarPassword(nuevaPassword);
+
+        JOptionPane.showMessageDialog(
+                this,
+                texts.getString("profile.password.success"),
+                texts.getString("profile.password.success.title"),
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    /* ===== BOTÓN MORADO ===== */
+
     private JButton crearBotonMorado(String texto, Dimension tamaño) {
 
         JButton boton = new JButton(texto) {
@@ -266,16 +268,12 @@ public class PerfilVista extends JFrame {
                         RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON
                 );
-
-                GradientPaint gp = new GradientPaint(
+                g2.setPaint(new GradientPaint(
                         0, 0, new Color(180, 120, 255),
                         0, getHeight(), new Color(110, 40, 180)
-                );
-
-                g2.setPaint(gp);
+                ));
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 16, 16);
                 g2.dispose();
-
                 super.paintComponent(g);
             }
         };

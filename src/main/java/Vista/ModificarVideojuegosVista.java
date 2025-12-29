@@ -4,6 +4,7 @@
  */
 package Vista;
 
+import Controlador.ModificarVideojuegosController;
 import Modelo.Usuario;
 import javax.swing.*;
 import java.awt.*;
@@ -28,11 +29,15 @@ public class ModificarVideojuegosVista extends JFrame {
     private Box.Filler sep1, sep2;
 
     private ResourceBundle texts;
+    private ModificarVideojuegosController controller;
 
     public ModificarVideojuegosVista(Usuario usuario) {
         this.usuario = usuario;
 
         texts = ResourceBundle.getBundle("i18n.messages");
+
+        controller = new ModificarVideojuegosController(usuario);
+        controller.setVista(this);
 
         setTitle(texts.getString("modify.window.title"));
         setSize(800, 550);
@@ -116,28 +121,14 @@ public class ModificarVideojuegosVista extends JFrame {
         root.add(panelCentral, gbc);
 
         // ===== ACCIONES =====
-        btnInsertar.addActionListener(e -> {
-            new InsertarVideojuegoVista(usuario).setVisible(true);
-            dispose();
-        });
-
-        btnActualizar.addActionListener(e -> {
-            new ActualizarVideojuegoVista(usuario).setVisible(true);
-            dispose();
-        });
-
-        btnEliminar.addActionListener(e -> {
-            new EliminarVideojuegoVista(usuario).setVisible(true);
-            dispose();
-        });
+        btnInsertar.addActionListener(e -> controller.insertar());
+        btnActualizar.addActionListener(e -> controller.actualizar());
+        btnEliminar.addActionListener(e -> controller.eliminar());
 
         /* ================= BOTÓN ATRÁS ================= */
         btnAtras = new JButton(texts.getString("common.back"));
         btnAtras.setFocusPainted(false);
-        btnAtras.addActionListener(e -> {
-            new MenuPrincipalVista(usuario).setVisible(true);
-            dispose();
-        });
+        btnAtras.addActionListener(e -> controller.volverMenu());
 
         gbc = new GridBagConstraints();
         gbc.gridx = 0;

@@ -4,16 +4,12 @@
  */
 package Vista;
 
-import Modelo.DAO.Imp.UsuarioDAO_imp;
-import Modelo.DAO.UsuarioDAO;
+import Controlador.LoginController;
 import Modelo.Usuario;
-import Modelo.util.PasswordService;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import com.formdev.flatlaf.FlatLightLaf;
-
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -30,7 +26,7 @@ public class LoginVista extends JFrame {
     private JButton btnRecuperar;
     private Image imagenFondo;
 
-    private UsuarioDAO usuarioDAO = new UsuarioDAO_imp();
+    private LoginController loginController;
     private ResourceBundle texts;
 
     public LoginVista() {
@@ -41,6 +37,7 @@ public class LoginVista extends JFrame {
         setResizable(true);
 
         texts = ResourceBundle.getBundle("i18n.messages");
+        loginController = new LoginController();
 
         var url = getClass().getResource("/img/imagenFondo.png");
         if (url != null) {
@@ -82,6 +79,7 @@ public class LoginVista extends JFrame {
         gbc.insets = new Insets(60, 0, 0, 0);
         root.add(panel, gbc);
 
+        //TITULO
         JLabel lblTitulo = new JLabel("CheckPoint", SwingConstants.CENTER);
         lblTitulo.setFont(new Font("Wide Latin", Font.PLAIN, 40));
         lblTitulo.setForeground(Color.WHITE);
@@ -92,20 +90,22 @@ public class LoginVista extends JFrame {
         panel.add(lblTitulo);
         panel.add(Box.createRigidArea(new Dimension(0, 30)));
 
+       
         txtUsername = new JTextField();
         txtUsername.setMaximumSize(new Dimension(280, 32));
         addPlaceholder(txtUsername, texts.getString("login.username"));
         txtUsername.setToolTipText("Introduce tu nombre de usuario");
-
         panel.add(txtUsername);
+
         panel.add(Box.createRigidArea(new Dimension(0, 18)));
 
+        
         txtPassword = new JPasswordField();
         txtPassword.setMaximumSize(new Dimension(280, 32));
         addPasswordPlaceholder(txtPassword, texts.getString("login.password"));
         txtPassword.setToolTipText("Introduce tu contraseña");
-
         panel.add(txtPassword);
+
         panel.add(Box.createRigidArea(new Dimension(0, 14)));
 
         JLabel lblOlvidado = new JLabel(texts.getString("login.forgot"));
@@ -114,6 +114,7 @@ public class LoginVista extends JFrame {
         lblOlvidado.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblOlvidado.setToolTipText("Pulsa para recuperar tu contraseña");
 
+        //BOTON RECUPERAR CONTRASEÑA
         btnRecuperar = crearBotonLilaSuave(texts.getString("login.recover"));
         btnRecuperar.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnRecuperar.setToolTipText("Recuperar contraseña mediante email");
@@ -125,8 +126,10 @@ public class LoginVista extends JFrame {
         panel.add(lblOlvidado);
         panel.add(Box.createRigidArea(new Dimension(0, 5)));
         panel.add(btnRecuperar);
+
         panel.add(Box.createRigidArea(new Dimension(0, 20)));
 
+        //BTOTON ACCEDER AS LA APLICASCION
         btnAcceder = crearBotonMorado(texts.getString("login.access"));
         btnAcceder.setFont(new Font("Segoe UI Black", Font.PLAIN, 20));
         btnAcceder.setMaximumSize(new Dimension(280, 40));
@@ -135,8 +138,8 @@ public class LoginVista extends JFrame {
         btnAcceder.addActionListener(e -> login());
 
         getRootPane().setDefaultButton(btnAcceder);
-        
         panel.add(btnAcceder);
+
         panel.add(Box.createRigidArea(new Dimension(0, 18)));
 
         JLabel lblRegistro = new JLabel(texts.getString("login.noaccount"));
@@ -145,6 +148,8 @@ public class LoginVista extends JFrame {
         lblRegistro.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblRegistro.setToolTipText("Crear una nueva cuenta");
 
+        
+        //BOTON PARA REGISTRARSE
         btnRegistrar = crearBotonMorado(texts.getString("login.register"));
         btnRegistrar.setFont(new Font("Segoe UI Black", Font.PLAIN, 20));
         btnRegistrar.setMaximumSize(new Dimension(280, 40));
@@ -173,52 +178,36 @@ public class LoginVista extends JFrame {
         SwingUtilities.invokeLater(() -> root.requestFocusInWindow());
     }
 
+    
+    //LOGIN DE LA APLICACION
     private void login() {
 
         String username = txtUsername.getText().trim();
         String password = new String(txtPassword.getPassword()).trim();
 
         if (username.isEmpty() || username.equals(texts.getString("login.username"))) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    texts.getString("error.username"),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+            JOptionPane.showMessageDialog(this, texts.getString("error.username"), "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         if (password.isEmpty() || password.equals(texts.getString("login.password"))) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    texts.getString("error.password"),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+            JOptionPane.showMessageDialog(this, texts.getString("error.password"), "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        Usuario usuario = usuarioDAO.fetchByUsername(username);
+        Usuario usuario = loginController.autenticar(username, password);
 
-        if (usuario == null || !PasswordService.verifyPassword(password, usuario.getPasswordHash())) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    texts.getString("error.login"),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+        if (usuario == null) {
+            JOptionPane.showMessageDialog(this, texts.getString("error.login"), "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        abrirPantallaPrincipal(usuario);
-        dispose();
-    }
-
-    private void abrirPantallaPrincipal(Usuario usuario) {
         dispose();
         new SplashScreenVista(usuario).setVisible(true);
     }
 
+    
+    //SELECCIONAR EL IDIOMA
     private void seleccionarIdioma() {
 
         JDialog dialog = new JDialog(this, texts.getString("language.title"), true);
@@ -256,10 +245,9 @@ public class LoginVista extends JFrame {
         btnAceptar.addActionListener(e -> {
             if (rbEs.isSelected()) {
                 Locale.setDefault(new Locale("es"));
-            } else if (rbEn.isSelected()) {
+            } else {
                 Locale.setDefault(new Locale("en"));
             }
-
             dialog.dispose();
             dispose();
             new LoginVista().setVisible(true);
@@ -271,10 +259,11 @@ public class LoginVista extends JFrame {
         panelBotones.add(btnAceptar, BorderLayout.EAST);
 
         dialog.add(panelBotones, BorderLayout.SOUTH);
-
         dialog.setVisible(true);
     }
 
+    
+    //PLACEHOLDER PARA PONER USER Y CONTRASEÑA
     private void addPlaceholder(JTextField field, String text) {
         field.setText(text);
         field.setForeground(Color.GRAY);
@@ -324,22 +313,20 @@ public class LoginVista extends JFrame {
         });
     }
 
+    //DISEÑO DE BOTONES
     private JButton crearBotonMorado(String texto) {
         JButton boton = new JButton(texto) {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
                 GradientPaint gp = new GradientPaint(
                         0, 0, new Color(180, 120, 255),
                         0, getHeight(), new Color(110, 40, 180)
                 );
-
                 g2.setPaint(gp);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
                 g2.dispose();
-
                 super.paintComponent(g);
             }
         };
@@ -352,7 +339,6 @@ public class LoginVista extends JFrame {
         boton.setOpaque(false);
         boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         boton.setMaximumSize(new Dimension(280, 42));
-
         return boton;
     }
 
@@ -362,16 +348,13 @@ public class LoginVista extends JFrame {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
                 GradientPaint gp = new GradientPaint(
                         0, 0, new Color(230, 200, 255),
                         0, getHeight(), new Color(190, 150, 235)
                 );
-
                 g2.setPaint(gp);
                 g2.fillRect(0, 0, getWidth(), getHeight());
                 g2.dispose();
-
                 super.paintComponent(g);
             }
         };
@@ -384,13 +367,7 @@ public class LoginVista extends JFrame {
         boton.setOpaque(false);
         boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         boton.setMaximumSize(new Dimension(200, 30));
-
         return boton;
-    }
-
-    public static void main(String[] args) {
-        FlatLightLaf.setup();
-        SwingUtilities.invokeLater(() -> new LoginVista().setVisible(true));
     }
 }
 

@@ -4,9 +4,7 @@
  */
 package Vista;
 
-import Modelo.DAO.Imp.FavoritoDAO_imp;
-import Modelo.DAO.Imp.VideojuegoDAO_imp;
-import Modelo.DAO.VideojuegoDAO;
+import Controlador.EliminarVideojuegoController;
 import Modelo.Favorito;
 import Modelo.Usuario;
 import Modelo.Videojuego;
@@ -17,6 +15,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.ResourceBundle;
+
 /**
  *
  * @author Raquel
@@ -25,9 +24,6 @@ public class EliminarVideojuegoVista extends JFrame {
 
     private Usuario usuario;
 
-    private VideojuegoDAO videojuegoDAO;
-    private FavoritoDAO_imp favoritoDAO;
-
     private JTable tabla;
     private DefaultTableModel modelo;
     private JTextField txtBuscar;
@@ -35,12 +31,15 @@ public class EliminarVideojuegoVista extends JFrame {
 
     private ResourceBundle texts;
 
+    private EliminarVideojuegoController controller;
+
     public EliminarVideojuegoVista(Usuario usuario) {
         this.usuario = usuario;
-        this.videojuegoDAO = new VideojuegoDAO_imp();
-        this.favoritoDAO = new FavoritoDAO_imp();
 
         texts = ResourceBundle.getBundle("i18n.messages");
+
+        controller = new EliminarVideojuegoController(usuario);
+        controller.setVista(this);
 
         setTitle(texts.getString("delete.window.title"));
         setSize(750, 450);
@@ -56,7 +55,10 @@ public class EliminarVideojuegoVista extends JFrame {
         setLayout(new BorderLayout(10, 10));
 
         /* ================= TÍTULO ================= */
-        JLabel lblTitulo = new JLabel(texts.getString("delete.title"), SwingConstants.CENTER);
+        JLabel lblTitulo = new JLabel(
+                texts.getString("delete.title"),
+                SwingConstants.CENTER
+        );
         lblTitulo.setFont(new Font("Showcard Gothic", Font.PLAIN, 28));
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         add(lblTitulo, BorderLayout.NORTH);
@@ -124,10 +126,7 @@ public class EliminarVideojuegoVista extends JFrame {
         btnAtras = crearBotonMorado(
                 texts.getString("delete.back"),
                 new Dimension(120, 32),
-                e -> {
-                    new ModificarVideojuegosVista(usuario).setVisible(true);
-                    dispose();
-                }
+                e -> controller.volverModificar()
         );
 
         btnEliminar = crearBotonMorado(
@@ -149,19 +148,20 @@ public class EliminarVideojuegoVista extends JFrame {
 
         add(panelInferior, BorderLayout.SOUTH);
 
-        /* ================= ACCIONES ================= */
         btnBuscar.addActionListener(e -> buscarVideojuegos());
 
-        SwingUtilities.invokeLater(() -> requestFocusInWindow());
+        SwingUtilities.invokeLater(() -> {
+            requestFocusInWindow();
+        });
     }
 
-    /* ================= CARGAR VIDEOJUEGOS ================= */
+    /* ================= CARGAR ================= */
     private void cargarVideojuegos() {
 
         modelo.setRowCount(0);
 
-        List<Videojuego> videojuegos = videojuegoDAO.fetchAll();
-        List<Favorito> favoritos = favoritoDAO.fetchByUsuario(usuario.getId());
+        List<Videojuego> videojuegos = controller.obtenerVideojuegos();
+        List<Favorito> favoritos = controller.obtenerFavoritos();
 
         for (Videojuego v : videojuegos) {
 
@@ -175,8 +175,8 @@ public class EliminarVideojuegoVista extends JFrame {
                 v.getAnio(),
                 v.getValoracion(),
                 esFavorito
-                        ? texts.getString("delete.yes")
-                        : texts.getString("delete.no")
+                ? texts.getString("delete.yes")
+                : texts.getString("delete.no")
             });
         }
     }
@@ -187,8 +187,8 @@ public class EliminarVideojuegoVista extends JFrame {
         String texto = txtBuscar.getText().trim().toLowerCase();
         modelo.setRowCount(0);
 
-        List<Videojuego> videojuegos = videojuegoDAO.fetchAll();
-        List<Favorito> favoritos = favoritoDAO.fetchByUsuario(usuario.getId());
+        List<Videojuego> videojuegos = controller.obtenerVideojuegos();
+        List<Favorito> favoritos = controller.obtenerFavoritos();
 
         for (Videojuego v : videojuegos) {
 
@@ -206,8 +206,8 @@ public class EliminarVideojuegoVista extends JFrame {
                     v.getAnio(),
                     v.getValoracion(),
                     esFavorito
-                            ? texts.getString("delete.yes")
-                            : texts.getString("delete.no")
+                    ? texts.getString("delete.yes")
+                    : texts.getString("delete.no")
                 });
             }
         }
@@ -230,29 +230,25 @@ public class EliminarVideojuegoVista extends JFrame {
 
         String titulo = (String) modelo.getValueAt(fila, 1);
 
-        String mensaje = java.text.MessageFormat.format(
-                texts.getString("delete.confirm.text"),
-                titulo
-        );
-
-        int opcion = JOptionPane.showConfirmDialog(
+        int confirmar = JOptionPane.showConfirmDialog(
                 this,
-                mensaje,
+                java.text.MessageFormat.format(
+                        texts.getString("delete.confirm.text"),
+                        titulo
+                ),
                 texts.getString("delete.confirm.title"),
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE
         );
 
-        if (opcion != JOptionPane.YES_OPTION) return;
+        if (confirmar != JOptionPane.YES_OPTION) {
+            return;
+        }
 
         int idVideojuego = (int) modelo.getValueAt(fila, 0);
 
         try {
-            favoritoDAO.fetchByUsuario(usuario.getId()).stream()
-                    .filter(f -> f.getVideojuegoId().getId().equals(idVideojuego))
-                    .forEach(f -> favoritoDAO.delete(f.getId()));
-
-            videojuegoDAO.delete(idVideojuego);
+            controller.eliminarVideojuego(idVideojuego);
 
             JOptionPane.showMessageDialog(
                     this,
@@ -279,6 +275,7 @@ public class EliminarVideojuegoVista extends JFrame {
             Dimension tamaño,
             ActionListener action
     ) {
+
         JButton boton = new JButton(texto) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -309,8 +306,8 @@ public class EliminarVideojuegoVista extends JFrame {
         boton.setOpaque(false);
         boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         boton.setPreferredSize(tamaño);
-
         boton.addActionListener(action);
+
         return boton;
     }
 
@@ -340,5 +337,3 @@ public class EliminarVideojuegoVista extends JFrame {
         });
     }
 }
-
-

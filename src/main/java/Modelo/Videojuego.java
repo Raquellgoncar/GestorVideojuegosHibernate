@@ -14,6 +14,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -62,6 +64,10 @@ public class Videojuego implements Serializable {
 
     @Column(name = "valoracion")
     private BigDecimal valoracion;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "videojuegoId")
     private Collection<Favorito> favoritoCollection;
@@ -117,6 +123,14 @@ public class Videojuego implements Serializable {
 
     public void setValoracion(BigDecimal valoracion) {
         this.valoracion = valoracion;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public Collection<Favorito> getFavoritoCollection() {

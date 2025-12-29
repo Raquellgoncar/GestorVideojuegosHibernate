@@ -4,6 +4,7 @@
  */
 package Vista;
 
+import Controlador.InsertarVideojuegoController;
 import Modelo.Videojuego;
 import Modelo.Favorito;
 import Modelo.Usuario;
@@ -29,16 +30,17 @@ public class InsertarVideojuegoVista extends JFrame {
     private JButton btnAceptar, btnCancelar;
 
     private Usuario usuario;
-
-    private VideojuegoDAO videojuegoDAO = new VideojuegoDAO_imp();
-    private FavoritoDAO favoritoDAO = new FavoritoDAO_imp();
-
     private ResourceBundle texts;
+
+    private InsertarVideojuegoController controller;
 
     public InsertarVideojuegoVista(Usuario usuario) {
         this.usuario = usuario;
 
         texts = ResourceBundle.getBundle("i18n.messages");
+
+        controller = new InsertarVideojuegoController(usuario);
+        controller.setVista(this);
 
         setTitle(texts.getString("insert.window.title"));
         setSize(560, 520);
@@ -62,7 +64,10 @@ public class InsertarVideojuegoVista extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         /* ===== TÍTULO ===== */
-        JLabel lblTitulo = new JLabel(texts.getString("insert.title"), SwingConstants.CENTER);
+        JLabel lblTitulo = new JLabel(
+                texts.getString("insert.title"),
+                SwingConstants.CENTER
+        );
         lblTitulo.setFont(new Font("Showcard Gothic", Font.PLAIN, 34));
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 
@@ -150,10 +155,7 @@ public class InsertarVideojuegoVista extends JFrame {
         btnCancelar = crearBotonMorado(
                 texts.getString("insert.cancel"),
                 new Dimension(120, 32),
-                e -> {
-                    new ModificarVideojuegosVista(usuario).setVisible(true);
-                    dispose();
-                }
+                e -> controller.volverModificar()
         );
 
         btnAceptar = crearBotonMorado(
@@ -163,8 +165,7 @@ public class InsertarVideojuegoVista extends JFrame {
         );
 
         getRootPane().setDefaultButton(btnAceptar);
-        
-        
+
         panelInferior.add(btnCancelar, BorderLayout.WEST);
         panelInferior.add(btnAceptar, BorderLayout.EAST);
 
@@ -178,12 +179,20 @@ public class InsertarVideojuegoVista extends JFrame {
         return campo;
     }
 
-    private JButton crearBotonMorado(String texto, Dimension tamaño, ActionListener action) {
+    private JButton crearBotonMorado(
+            String texto,
+            Dimension tamaño,
+            ActionListener action
+    ) {
+
         JButton boton = new JButton(texto) {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(
+                        RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON
+                );
 
                 GradientPaint gp = new GradientPaint(
                         0, 0, new Color(180, 120, 255),
@@ -211,7 +220,7 @@ public class InsertarVideojuegoVista extends JFrame {
         return boton;
     }
 
-    /* ================= VALIDACIONES + BD ================= */
+    /* ================= VALIDACIONES ================= */
     private void validarYProcesar() {
 
         if (txtTitulo.getText().trim().isEmpty()
@@ -245,21 +254,13 @@ public class InsertarVideojuegoVista extends JFrame {
         }
 
         try {
-            Videojuego v = new Videojuego();
-            v.setTitulo(txtTitulo.getText().trim());
-            v.setPlataforma(txtPlataforma.getText().trim());
-            v.setAnio(anio);
-            v.setValoracion(valoracion);
-
-            videojuegoDAO.insert(v);
-
-            if (btnFavorito.isSelected()) {
-                Favorito f = new Favorito();
-                f.setUsuarioId(usuario);
-                f.setVideojuegoId(v);
-                f.setFechaAnadido(new Date());
-                favoritoDAO.insert(f);
-            }
+            controller.insertarVideojuego(
+                    txtTitulo.getText().trim(),
+                    txtPlataforma.getText().trim(),
+                    anio,
+                    valoracion,
+                    btnFavorito.isSelected()
+            );
 
             JOptionPane.showMessageDialog(
                     this,
@@ -271,8 +272,7 @@ public class InsertarVideojuegoVista extends JFrame {
                     JOptionPane.INFORMATION_MESSAGE
             );
 
-            new ModificarVideojuegosVista(usuario).setVisible(true);
-            dispose();
+            controller.volverModificar();
 
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(
@@ -290,3 +290,4 @@ public class InsertarVideojuegoVista extends JFrame {
         return new ImageIcon(img);
     }
 }
+

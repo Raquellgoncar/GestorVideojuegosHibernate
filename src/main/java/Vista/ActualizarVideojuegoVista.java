@@ -4,9 +4,7 @@
  */
 package Vista;
 
-import Modelo.DAO.Imp.FavoritoDAO_imp;
-import Modelo.DAO.Imp.VideojuegoDAO_imp;
-import Modelo.DAO.VideojuegoDAO;
+import Controlador.ActualizarVideojuegoController;
 import Modelo.Usuario;
 import Modelo.Videojuego;
 import Modelo.Favorito;
@@ -14,6 +12,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -25,9 +25,6 @@ public class ActualizarVideojuegoVista extends JFrame {
 
     private Usuario usuario;
 
-    private VideojuegoDAO videojuegoDAO;
-    private FavoritoDAO_imp favoritoDAO;
-
     private JTable tabla;
     private DefaultTableModel modelo;
     private JTextField txtBuscar;
@@ -35,12 +32,15 @@ public class ActualizarVideojuegoVista extends JFrame {
 
     private ResourceBundle texts;
 
+    private ActualizarVideojuegoController controller;
+
     public ActualizarVideojuegoVista(Usuario usuario) {
         this.usuario = usuario;
-        this.videojuegoDAO = new VideojuegoDAO_imp();
-        this.favoritoDAO = new FavoritoDAO_imp();
 
         texts = ResourceBundle.getBundle("i18n.messages");
+
+        controller = new ActualizarVideojuegoController(usuario);
+        controller.setVista(this);
 
         setTitle(texts.getString("update.window.title"));
         setSize(750, 450);
@@ -56,7 +56,10 @@ public class ActualizarVideojuegoVista extends JFrame {
         setLayout(new BorderLayout(10, 10));
 
         /* ================= TÍTULO ================= */
-        JLabel lblTitulo = new JLabel(texts.getString("update.title"), SwingConstants.CENTER);
+        JLabel lblTitulo = new JLabel(
+                texts.getString("update.title"),
+                SwingConstants.CENTER
+        );
         lblTitulo.setFont(new Font("Showcard Gothic", Font.PLAIN, 28));
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         add(lblTitulo, BorderLayout.NORTH);
@@ -123,10 +126,7 @@ public class ActualizarVideojuegoVista extends JFrame {
         btnAtras = crearBotonMorado(
                 texts.getString("update.back"),
                 new Dimension(120, 32),
-                e -> {
-                    new ModificarVideojuegosVista(usuario).setVisible(true);
-                    dispose();
-                }
+                e -> controller.volverModificar()
         );
 
         btnActualizar = crearBotonMorado(
@@ -201,8 +201,8 @@ public class ActualizarVideojuegoVista extends JFrame {
 
         modelo.setRowCount(0);
 
-        List<Videojuego> videojuegos = videojuegoDAO.fetchAll();
-        List<Favorito> favoritos = favoritoDAO.fetchByUsuario(usuario.getId());
+        List<Videojuego> videojuegos = controller.obtenerVideojuegosUsuario();
+        List<Favorito> favoritos = controller.obtenerFavoritosUsuario();
 
         for (Videojuego v : videojuegos) {
 
@@ -215,7 +215,9 @@ public class ActualizarVideojuegoVista extends JFrame {
                 v.getPlataforma(),
                 v.getAnio(),
                 v.getValoracion(),
-                esFavorito ? texts.getString("update.yes") : texts.getString("update.no")
+                esFavorito
+                    ? texts.getString("update.yes")
+                    : texts.getString("update.no")
             });
         }
     }
@@ -226,8 +228,8 @@ public class ActualizarVideojuegoVista extends JFrame {
         String texto = txtBuscar.getText().trim().toLowerCase();
         modelo.setRowCount(0);
 
-        List<Videojuego> videojuegos = videojuegoDAO.fetchAll();
-        List<Favorito> favoritos = favoritoDAO.fetchByUsuario(usuario.getId());
+        List<Videojuego> videojuegos = controller.obtenerVideojuegosUsuario();
+        List<Favorito> favoritos = controller.obtenerFavoritosUsuario();
 
         for (Videojuego v : videojuegos) {
 
@@ -244,7 +246,9 @@ public class ActualizarVideojuegoVista extends JFrame {
                     v.getPlataforma(),
                     v.getAnio(),
                     v.getValoracion(),
-                    esFavorito ? texts.getString("update.yes") : texts.getString("update.no")
+                    esFavorito
+                        ? texts.getString("update.yes")
+                        : texts.getString("update.no")
                 });
             }
         }
@@ -266,14 +270,15 @@ public class ActualizarVideojuegoVista extends JFrame {
         }
 
         int idVideojuego = (int) modelo.getValueAt(fila, 0);
-        Videojuego v = videojuegoDAO.fetchOne(idVideojuego);
+
+        Videojuego v = controller.obtenerVideojuegoPorId(idVideojuego);
 
         boolean esFavorito = modelo.getValueAt(fila, 5)
                 .equals(texts.getString("update.yes"));
 
         new ActualizarVideojuegoDialog(
                 this,
-                usuario,
+                controller.getUsuario(),
                 v,
                 esFavorito
         ).setVisible(true);
@@ -287,10 +292,10 @@ public class ActualizarVideojuegoVista extends JFrame {
         campo.setText(texto);
         campo.setForeground(Color.GRAY);
 
-        campo.addFocusListener(new java.awt.event.FocusAdapter() {
+        campo.addFocusListener(new FocusAdapter() {
 
             @Override
-            public void focusGained(java.awt.event.FocusEvent e) {
+            public void focusGained(FocusEvent e) {
                 if (campo.getText().equals(texto)) {
                     campo.setText("");
                     campo.setForeground(Color.BLACK);
@@ -298,7 +303,7 @@ public class ActualizarVideojuegoVista extends JFrame {
             }
 
             @Override
-            public void focusLost(java.awt.event.FocusEvent e) {
+            public void focusLost(FocusEvent e) {
                 if (campo.getText().isEmpty()) {
                     campo.setText(texto);
                     campo.setForeground(Color.GRAY);
@@ -307,6 +312,7 @@ public class ActualizarVideojuegoVista extends JFrame {
         });
     }
 }
+
 
 
 

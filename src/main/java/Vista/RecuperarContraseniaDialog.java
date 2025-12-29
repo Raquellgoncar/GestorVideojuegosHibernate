@@ -4,14 +4,9 @@
  */
 package Vista;
 
-import Modelo.DAO.UsuarioDAO;
-import Modelo.DAO.Imp.UsuarioDAO_imp;
-import Modelo.Usuario;
-import Modelo.util.EmailService;
-import Modelo.util.PasswordService;
+import Controlador.RecuperarContraseniaController;
 import javax.swing.*;
 import java.awt.*;
-import java.util.UUID;
 import java.util.regex.Pattern;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -27,7 +22,7 @@ public class RecuperarContraseniaDialog extends JDialog {
     private JButton btnRecuperar;
     private JButton btnCancelar;
 
-    private UsuarioDAO usuarioDAO = new UsuarioDAO_imp();
+    private RecuperarContraseniaController controller;
     private boolean passwordGenerada = false;
 
     private ResourceBundle texts;
@@ -36,6 +31,7 @@ public class RecuperarContraseniaDialog extends JDialog {
         super(parent, true);
 
         texts = ResourceBundle.getBundle("i18n.messages");
+        controller = new RecuperarContraseniaController();
 
         setTitle(texts.getString("recover.title"));
         setSize(420, 260);
@@ -151,9 +147,10 @@ public class RecuperarContraseniaDialog extends JDialog {
             return;
         }
 
-        Usuario usuario = usuarioDAO.fetchByEmail(email);
+        /* delegar lógica al controlador */
+        boolean ok = controller.recuperarPassword(email);
 
-        if (usuario == null) {
+        if (!ok) {
             JOptionPane.showMessageDialog(
                     this,
                     texts.getString("recover.error.email.notfound"),
@@ -163,22 +160,6 @@ public class RecuperarContraseniaDialog extends JDialog {
             return;
         }
 
-        /* Generar nueva contraseña */
-        String nuevaPassword = UUID.randomUUID()
-                .toString()
-                .substring(0, 8);
-
-        usuario.setPasswordHash(
-                PasswordService.hashPassword(nuevaPassword)
-        );
-        usuarioDAO.update(usuario);
-
-        /* Enviar email */
-        EmailService.enviarNuevaPassword(
-                usuario.getEmail(),
-                nuevaPassword
-        );
-
         JOptionPane.showMessageDialog(
                 this,
                 texts.getString("recover.success.message"),
@@ -186,6 +167,8 @@ public class RecuperarContraseniaDialog extends JDialog {
                 JOptionPane.INFORMATION_MESSAGE
         );
 
+        passwordGenerada = true;
         dispose();
     }
 }
+

@@ -4,18 +4,18 @@
  */
 package Vista;
 
+import Controlador.MostrarFavoritosController;
 import Modelo.Favorito;
 import Modelo.Usuario;
 import Modelo.Videojuego;
-import Modelo.DAO.Imp.FavoritoDAO_imp;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.List;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import java.util.ResourceBundle;
+import javax.swing.table.DefaultTableCellRenderer;
 /**
  *
  * @author Raquel
@@ -28,11 +28,14 @@ public class MostrarFavoritosVista extends JFrame {
     private List<Favorito> listaFavoritos;
 
     private ResourceBundle texts;
+    private MostrarFavoritosController controller;
 
     public MostrarFavoritosVista(Usuario usuario) {
         this.usuario = usuario;
+        this.texts = ResourceBundle.getBundle("i18n.messages");
 
-        texts = ResourceBundle.getBundle("i18n.messages");
+        controller = new MostrarFavoritosController(usuario);
+        controller.setVista(this);
 
         setTitle(texts.getString("favorites.window.title"));
         setSize(700, 400);
@@ -45,7 +48,6 @@ public class MostrarFavoritosVista extends JFrame {
 
     private void initComponents() {
 
-        /* ===== PANEL CON FONDO ===== */
         JPanel root = new JPanel(new BorderLayout(10, 10)) {
 
             private Image fondo = new ImageIcon(
@@ -61,7 +63,6 @@ public class MostrarFavoritosVista extends JFrame {
 
         setContentPane(root);
 
-        /* ===== TÍTULO ===== */
         JLabel lblTitulo = new JLabel(
                 texts.getString("favorites.title"),
                 SwingConstants.CENTER
@@ -71,7 +72,6 @@ public class MostrarFavoritosVista extends JFrame {
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         root.add(lblTitulo, BorderLayout.NORTH);
 
-        /* ===== TABLA ===== */
         modelo = new DefaultTableModel(
                 new Object[]{
                     texts.getString("favorites.table.title"),
@@ -98,23 +98,25 @@ public class MostrarFavoritosVista extends JFrame {
         header.setReorderingAllowed(false);
         header.setOpaque(false);
 
+        // ===== CENTRADO DE AÑO Y VALORACIÓN (IGUAL QUE LA CLASE ANTIGUA) =====
+        DefaultTableCellRenderer centrado = new DefaultTableCellRenderer();
+        centrado.setHorizontalAlignment(SwingConstants.CENTER);
+        tabla.getColumnModel().getColumn(2).setCellRenderer(centrado); // Año
+        tabla.getColumnModel().getColumn(3).setCellRenderer(centrado); // Valoración
+        // ==================================================================
+
         JScrollPane scroll = new JScrollPane(tabla);
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);
-
         root.add(scroll, BorderLayout.CENTER);
 
-        /* ===== PANEL INFERIOR ===== */
         JPanel panelSur = new JPanel(new BorderLayout());
         panelSur.setOpaque(false);
 
         JButton btnAtras = crearBotonMorado(
                 texts.getString("favorites.back"),
                 new Dimension(120, 30),
-                e -> {
-                    new MenuPrincipalVista(usuario).setVisible(true);
-                    dispose();
-                }
+                e -> controller.volverMenu()
         );
 
         JButton btnQuitar = crearBotonMorado(
@@ -135,6 +137,52 @@ public class MostrarFavoritosVista extends JFrame {
         panelSur.add(panelDer, BorderLayout.EAST);
 
         root.add(panelSur, BorderLayout.SOUTH);
+    }
+
+    /* ===== CARGAR FAVORITOS ===== */
+    public void cargarFavoritos() {
+
+        listaFavoritos = controller.obtenerFavoritos();
+        modelo.setRowCount(0);
+
+        if (listaFavoritos == null || listaFavoritos.isEmpty()) return;
+
+        for (Favorito f : listaFavoritos) {
+            Videojuego v = f.getVideojuegoId();
+            modelo.addRow(new Object[]{
+                v.getTitulo(),
+                v.getPlataforma(),
+                v.getAnio(),
+                v.getValoracion()
+            });
+        }
+    }
+
+    /* ===== QUITAR FAVORITO ===== */
+    private void quitarFavorito() {
+
+        int fila = tabla.getSelectedRow();
+
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    texts.getString("favorites.select.warning"),
+                    texts.getString("favorites.select.title"),
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        int opcion = JOptionPane.showConfirmDialog(
+                this,
+                texts.getString("favorites.confirm.text"),
+                texts.getString("favorites.confirm.title"),
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (opcion == JOptionPane.YES_OPTION) {
+            controller.quitarFavorito(listaFavoritos.get(fila));
+        }
     }
 
     /* ===== BOTÓN MORADO ===== */
@@ -174,60 +222,9 @@ public class MostrarFavoritosVista extends JFrame {
         boton.setOpaque(false);
         boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         boton.setPreferredSize(tamaño);
-
         boton.addActionListener(action);
+
         return boton;
     }
-
-    /* ===== CARGAR FAVORITOS ===== */
-    private void cargarFavoritos() {
-
-        FavoritoDAO_imp dao = new FavoritoDAO_imp();
-        listaFavoritos = dao.fetchByUsuario(usuario.getId());
-
-        modelo.setRowCount(0);
-
-        if (listaFavoritos == null || listaFavoritos.isEmpty()) {
-            return;
-        }
-
-        for (Favorito f : listaFavoritos) {
-            Videojuego v = f.getVideojuegoId();
-            modelo.addRow(new Object[]{
-                v.getTitulo(),
-                v.getPlataforma(),
-                v.getAnio(),
-                v.getValoracion()
-            });
-        }
-    }
-
-    /* ===== QUITAR FAVORITO ===== */
-    private void quitarFavorito() {
-
-        int fila = tabla.getSelectedRow();
-
-        if (fila == -1) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    texts.getString("favorites.select.warning"),
-                    texts.getString("favorites.select.title"),
-                    JOptionPane.WARNING_MESSAGE
-            );
-            return;
-        }
-
-        int opcion = JOptionPane.showConfirmDialog(
-                this,
-                texts.getString("favorites.confirm.text"),
-                texts.getString("favorites.confirm.title"),
-                JOptionPane.YES_NO_OPTION
-        );
-
-        if (opcion == JOptionPane.YES_OPTION) {
-            Favorito f = listaFavoritos.get(fila);
-            new FavoritoDAO_imp().delete(f.getId());
-            cargarFavoritos();
-        }
-    }
 }
+
