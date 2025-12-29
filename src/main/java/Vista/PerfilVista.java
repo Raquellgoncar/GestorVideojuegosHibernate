@@ -22,6 +22,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.RenderingHints;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -45,10 +47,14 @@ public class PerfilVista extends JFrame {
     private UsuarioDAO usuarioDAO = new UsuarioDAO_imp();
     private VideojuegoDAO videojuegoDAO = new VideojuegoDAO_imp();
 
+    private ResourceBundle texts;
+
     public PerfilVista(Usuario usuario) {
         this.usuario = usuario;
 
-        setTitle("Perfil");
+        texts = ResourceBundle.getBundle("i18n.messages");
+
+        setTitle(texts.getString("profile.window.title"));
         setSize(650, 520);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -72,7 +78,10 @@ public class PerfilVista extends JFrame {
         gbc.anchor = GridBagConstraints.WEST;
 
         /* ================= TÍTULO ================= */
-        JLabel lblTitulo = new JLabel("PERFIL", SwingConstants.CENTER);
+        JLabel lblTitulo = new JLabel(
+                texts.getString("profile.title"),
+                SwingConstants.CENTER
+        );
         lblTitulo.setFont(new Font("Showcard Gothic", Font.PLAIN, 34));
 
         gbc.gridx = 0;
@@ -93,7 +102,7 @@ public class PerfilVista extends JFrame {
         gbc.gridx = 0;
         gbc.insets = new Insets(8, 0, 12, 20);
 
-        JLabel lblNombre = new JLabel("Nombre:");
+        JLabel lblNombre = new JLabel(texts.getString("profile.name") + ":");
         lblNombre.setFont(fuenteLabel);
         root.add(lblNombre, gbc);
 
@@ -106,7 +115,7 @@ public class PerfilVista extends JFrame {
         gbc.anchor = GridBagConstraints.EAST;
 
         JButton btnEditar = crearBotonMorado(
-                "Editar",
+                texts.getString("profile.edit"),
                 new Dimension(110, 34)
         );
         btnEditar.addActionListener(e -> editarNombre());
@@ -119,7 +128,7 @@ public class PerfilVista extends JFrame {
         gbc.gridx = 0;
         gbc.insets = new Insets(18, 0, 12, 20);
 
-        JLabel lblUser = new JLabel("Username:");
+        JLabel lblUser = new JLabel(texts.getString("profile.username") + ":");
         lblUser.setFont(fuenteLabel);
         root.add(lblUser, gbc);
 
@@ -133,7 +142,7 @@ public class PerfilVista extends JFrame {
         gbc.gridx = 0;
         gbc.insets = new Insets(18, 0, 12, 20);
 
-        JLabel lblEmail = new JLabel("Email:");
+        JLabel lblEmail = new JLabel(texts.getString("profile.email") + ":");
         lblEmail.setFont(fuenteLabel);
         root.add(lblEmail, gbc);
 
@@ -149,7 +158,9 @@ public class PerfilVista extends JFrame {
         gbc.insets = new Insets(50, 0, 6, 0);
         gbc.anchor = GridBagConstraints.CENTER;
 
-        JLabel lblTotalTexto = new JLabel("Total de juegos registrados:");
+        JLabel lblTotalTexto = new JLabel(
+                texts.getString("profile.total.text") + ":"
+        );
         lblTotalTexto.setFont(new Font("Arial", Font.BOLD, 16));
         root.add(lblTotalTexto, gbc);
 
@@ -165,7 +176,10 @@ public class PerfilVista extends JFrame {
         panelInferior.setBorder(BorderFactory.createEmptyBorder(10, 25, 15, 25));
         panelInferior.setOpaque(false);
 
-        JButton btnAtras = crearBotonMorado("Atrás", new Dimension(120, 32));
+        JButton btnAtras = crearBotonMorado(
+                texts.getString("profile.back"),
+                new Dimension(120, 32)
+        );
         btnAtras.addActionListener(e -> {
             new MenuPrincipalVista(usuario).setVisible(true);
             dispose();
@@ -188,56 +202,55 @@ public class PerfilVista extends JFrame {
         txtNombre.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
         Object[] contenido = {
-            "Nuevo nombre:",
+            texts.getString("profile.edit.dialog.label"),
             txtNombre
         };
 
         int opcion = JOptionPane.showOptionDialog(
                 this,
                 contenido,
-                "Editar nombre",
+                texts.getString("profile.edit.dialog.title"),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
                 null,
-                new String[]{"Cancelar", "Aceptar"},
-                "Aceptar"
+                new String[]{
+                    texts.getString("profile.back"),
+                    "OK"
+                },
+                "OK"
         );
 
-        if (opcion != 1) {
-            return;
-        }
+        if (opcion != 1) return;
 
         String nuevoNombre = txtNombre.getText().trim();
         String nombreAntiguo = usuario.getNombre();
 
-        if (nuevoNombre.isEmpty() || nuevoNombre.equals(nombreAntiguo)) {
-            return;
-        }
+        if (nuevoNombre.isEmpty() || nuevoNombre.equals(nombreAntiguo)) return;
+
+        String mensajeConfirmacion = MessageFormat.format(
+                texts.getString("profile.edit.confirm.text"),
+                nombreAntiguo,
+                nuevoNombre
+        );
 
         int confirmar = JOptionPane.showConfirmDialog(
                 this,
-                "Seguro que deseas cambiar el nombre\n\n"
-                + "de \"" + nombreAntiguo +  "\" a \"" + nuevoNombre + "\"",
-                "Confirmar cambio",
+                mensajeConfirmacion,
+                texts.getString("profile.edit.confirm.title"),
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE
         );
 
-        if (confirmar != JOptionPane.YES_OPTION) {
-            return;
-        }
+        if (confirmar != JOptionPane.YES_OPTION) return;
 
-        
         usuario.setNombre(nuevoNombre);
         usuarioDAO.update(usuario);
-
-        
         lblNombreValor.setText(nuevoNombre);
 
         JOptionPane.showMessageDialog(
                 this,
-                "Nombre actualizado correctamente",
-                "Perfil",
+                texts.getString("profile.edit.success"),
+                texts.getString("profile.edit.success.title"),
                 JOptionPane.INFORMATION_MESSAGE
         );
     }
@@ -279,3 +292,4 @@ public class PerfilVista extends JFrame {
         return boton;
     }
 }
+

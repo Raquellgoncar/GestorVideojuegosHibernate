@@ -16,6 +16,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.ResourceBundle;
 /**
  *
  * @author Raquel
@@ -32,12 +33,16 @@ public class EliminarVideojuegoVista extends JFrame {
     private JTextField txtBuscar;
     private JButton btnBuscar, btnEliminar, btnAtras;
 
+    private ResourceBundle texts;
+
     public EliminarVideojuegoVista(Usuario usuario) {
         this.usuario = usuario;
         this.videojuegoDAO = new VideojuegoDAO_imp();
         this.favoritoDAO = new FavoritoDAO_imp();
 
-        setTitle("Eliminar videojuego");
+        texts = ResourceBundle.getBundle("i18n.messages");
+
+        setTitle(texts.getString("delete.window.title"));
         setSize(750, 450);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -51,7 +56,7 @@ public class EliminarVideojuegoVista extends JFrame {
         setLayout(new BorderLayout(10, 10));
 
         /* ================= TÍTULO ================= */
-        JLabel lblTitulo = new JLabel("ELIMINAR JUEGO", SwingConstants.CENTER);
+        JLabel lblTitulo = new JLabel(texts.getString("delete.title"), SwingConstants.CENTER);
         lblTitulo.setFont(new Font("Showcard Gothic", Font.PLAIN, 28));
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         add(lblTitulo, BorderLayout.NORTH);
@@ -67,9 +72,9 @@ public class EliminarVideojuegoVista extends JFrame {
                 txtBuscar.getPreferredSize().width,
                 32
         ));
-        ponerPlaceholder(txtBuscar, "Buscar por nombre...");
+        ponerPlaceholder(txtBuscar, texts.getString("delete.search.placeholder"));
 
-        btnBuscar = new JButton("Buscar");
+        btnBuscar = new JButton(texts.getString("delete.search"));
 
         panelBuscar.add(txtBuscar);
         panelBuscar.add(btnBuscar);
@@ -77,7 +82,14 @@ public class EliminarVideojuegoVista extends JFrame {
 
         /* ===== TABLA ===== */
         modelo = new DefaultTableModel(
-                new Object[]{"ID", "Título", "Plataforma", "Año", "Valoración", "Favorito"},
+                new Object[]{
+                    texts.getString("delete.table.id"),
+                    texts.getString("delete.table.title"),
+                    texts.getString("delete.table.platform"),
+                    texts.getString("delete.table.year"),
+                    texts.getString("delete.table.rating"),
+                    texts.getString("delete.table.favorite")
+                },
                 0
         ) {
             @Override
@@ -109,14 +121,8 @@ public class EliminarVideojuegoVista extends JFrame {
         panelInferior.setBorder(BorderFactory.createEmptyBorder(8, 25, 18, 25));
         panelInferior.setOpaque(false);
 
-        JPanel panelIzq = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panelIzq.setOpaque(false);
-
-        JPanel panelDer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        panelDer.setOpaque(false);
-
         btnAtras = crearBotonMorado(
-                "Atrás",
+                texts.getString("delete.back"),
                 new Dimension(120, 32),
                 e -> {
                     new ModificarVideojuegosVista(usuario).setVisible(true);
@@ -125,12 +131,17 @@ public class EliminarVideojuegoVista extends JFrame {
         );
 
         btnEliminar = crearBotonMorado(
-                "Eliminar",
+                texts.getString("delete.delete"),
                 new Dimension(200, 38),
                 e -> eliminarSeleccionado()
         );
 
+        JPanel panelIzq = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panelIzq.setOpaque(false);
         panelIzq.add(btnAtras);
+
+        JPanel panelDer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        panelDer.setOpaque(false);
         panelDer.add(btnEliminar);
 
         panelInferior.add(panelIzq, BorderLayout.WEST);
@@ -163,7 +174,9 @@ public class EliminarVideojuegoVista extends JFrame {
                 v.getPlataforma(),
                 v.getAnio(),
                 v.getValoracion(),
-                esFavorito ? "Sí" : "No"
+                esFavorito
+                        ? texts.getString("delete.yes")
+                        : texts.getString("delete.no")
             });
         }
     }
@@ -180,7 +193,7 @@ public class EliminarVideojuegoVista extends JFrame {
         for (Videojuego v : videojuegos) {
 
             if (texto.isEmpty()
-                    || texto.equals("buscar por nombre...")
+                    || texto.equals(texts.getString("delete.search.placeholder").toLowerCase())
                     || v.getTitulo().toLowerCase().contains(texto)) {
 
                 boolean esFavorito = favoritos.stream()
@@ -192,7 +205,9 @@ public class EliminarVideojuegoVista extends JFrame {
                     v.getPlataforma(),
                     v.getAnio(),
                     v.getValoracion(),
-                    esFavorito ? "Sí" : "No"
+                    esFavorito
+                            ? texts.getString("delete.yes")
+                            : texts.getString("delete.no")
                 });
             }
         }
@@ -206,8 +221,8 @@ public class EliminarVideojuegoVista extends JFrame {
         if (fila == -1) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Seleccione videojuego a eliminar",
-                    "Aviso",
+                    texts.getString("delete.select.warning"),
+                    texts.getString("delete.select.title"),
                     JOptionPane.WARNING_MESSAGE
             );
             return;
@@ -215,10 +230,15 @@ public class EliminarVideojuegoVista extends JFrame {
 
         String titulo = (String) modelo.getValueAt(fila, 1);
 
+        String mensaje = java.text.MessageFormat.format(
+                texts.getString("delete.confirm.text"),
+                titulo
+        );
+
         int opcion = JOptionPane.showConfirmDialog(
                 this,
-                "Seguro que deseas eliminar el videojuego\n\n\"" + titulo + "\"\n\nEsta acción NO se puede deshacer",
-                "Confirmar eliminación",
+                mensaje,
+                texts.getString("delete.confirm.title"),
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE
         );
@@ -236,19 +256,18 @@ public class EliminarVideojuegoVista extends JFrame {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Videojuego eliminado correctamente",
-                    "Eliminado",
+                    texts.getString("delete.success"),
+                    texts.getString("delete.success.title"),
                     JOptionPane.INFORMATION_MESSAGE
             );
 
             cargarVideojuegos();
 
         } catch (Exception ex) {
-            ex.printStackTrace();
             JOptionPane.showMessageDialog(
                     this,
-                    "Error al eliminar el videojuego",
-                    "Error",
+                    texts.getString("delete.error.generic"),
+                    texts.getString("delete.error.title"),
                     JOptionPane.ERROR_MESSAGE
             );
         }
@@ -321,4 +340,5 @@ public class EliminarVideojuegoVista extends JFrame {
         });
     }
 }
+
 

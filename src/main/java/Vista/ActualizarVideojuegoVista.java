@@ -15,6 +15,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -32,12 +33,16 @@ public class ActualizarVideojuegoVista extends JFrame {
     private JTextField txtBuscar;
     private JButton btnBuscar, btnActualizar, btnAtras;
 
+    private ResourceBundle texts;
+
     public ActualizarVideojuegoVista(Usuario usuario) {
         this.usuario = usuario;
         this.videojuegoDAO = new VideojuegoDAO_imp();
         this.favoritoDAO = new FavoritoDAO_imp();
 
-        setTitle("Actualizar videojuego");
+        texts = ResourceBundle.getBundle("i18n.messages");
+
+        setTitle(texts.getString("update.window.title"));
         setSize(750, 450);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -51,7 +56,7 @@ public class ActualizarVideojuegoVista extends JFrame {
         setLayout(new BorderLayout(10, 10));
 
         /* ================= TÍTULO ================= */
-        JLabel lblTitulo = new JLabel("ACTUALIZAR JUEGO", SwingConstants.CENTER);
+        JLabel lblTitulo = new JLabel(texts.getString("update.title"), SwingConstants.CENTER);
         lblTitulo.setFont(new Font("Showcard Gothic", Font.PLAIN, 28));
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         add(lblTitulo, BorderLayout.NORTH);
@@ -67,9 +72,9 @@ public class ActualizarVideojuegoVista extends JFrame {
                 txtBuscar.getPreferredSize().width,
                 32
         ));
-        ponerPlaceholder(txtBuscar, "Buscar por nombre...");
+        ponerPlaceholder(txtBuscar, texts.getString("update.search.placeholder"));
 
-        btnBuscar = new JButton("Buscar");
+        btnBuscar = new JButton(texts.getString("update.search"));
 
         panelBuscar.add(txtBuscar);
         panelBuscar.add(btnBuscar);
@@ -77,7 +82,14 @@ public class ActualizarVideojuegoVista extends JFrame {
 
         /* ===== TABLA ===== */
         modelo = new DefaultTableModel(
-                new Object[]{"ID", "Título", "Plataforma", "Año", "Valoración", "Favorito"},
+                new Object[]{
+                    texts.getString("update.table.id"),
+                    texts.getString("update.table.title"),
+                    texts.getString("update.table.platform"),
+                    texts.getString("update.table.year"),
+                    texts.getString("update.table.rating"),
+                    texts.getString("update.table.favorite")
+                },
                 0
         ) {
             @Override
@@ -109,7 +121,7 @@ public class ActualizarVideojuegoVista extends JFrame {
         panelSur.setBorder(BorderFactory.createEmptyBorder(10, 15, 15, 15));
 
         btnAtras = crearBotonMorado(
-                "Atrás",
+                texts.getString("update.back"),
                 new Dimension(120, 32),
                 e -> {
                     new ModificarVideojuegosVista(usuario).setVisible(true);
@@ -118,7 +130,7 @@ public class ActualizarVideojuegoVista extends JFrame {
         );
 
         btnActualizar = crearBotonMorado(
-                "Actualizar",
+                texts.getString("update.update"),
                 new Dimension(180, 38),
                 e -> actualizarSeleccionado()
         );
@@ -203,7 +215,7 @@ public class ActualizarVideojuegoVista extends JFrame {
                 v.getPlataforma(),
                 v.getAnio(),
                 v.getValoracion(),
-                esFavorito ? "Sí" : "No"
+                esFavorito ? texts.getString("update.yes") : texts.getString("update.no")
             });
         }
     }
@@ -220,7 +232,7 @@ public class ActualizarVideojuegoVista extends JFrame {
         for (Videojuego v : videojuegos) {
 
             if (texto.isEmpty()
-                    || texto.equals("buscar por nombre...")
+                    || texto.equals(texts.getString("update.search.placeholder").toLowerCase())
                     || v.getTitulo().toLowerCase().contains(texto)) {
 
                 boolean esFavorito = favoritos.stream()
@@ -232,7 +244,7 @@ public class ActualizarVideojuegoVista extends JFrame {
                     v.getPlataforma(),
                     v.getAnio(),
                     v.getValoracion(),
-                    esFavorito ? "Sí" : "No"
+                    esFavorito ? texts.getString("update.yes") : texts.getString("update.no")
                 });
             }
         }
@@ -246,8 +258,8 @@ public class ActualizarVideojuegoVista extends JFrame {
         if (fila == -1) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Seleccione videojuego a actualizar",
-                    "Aviso",
+                    texts.getString("update.select.warning"),
+                    texts.getString("update.select.title"),
                     JOptionPane.WARNING_MESSAGE
             );
             return;
@@ -256,7 +268,8 @@ public class ActualizarVideojuegoVista extends JFrame {
         int idVideojuego = (int) modelo.getValueAt(fila, 0);
         Videojuego v = videojuegoDAO.fetchOne(idVideojuego);
 
-        boolean esFavorito = modelo.getValueAt(fila, 5).equals("Sí");
+        boolean esFavorito = modelo.getValueAt(fila, 5)
+                .equals(texts.getString("update.yes"));
 
         new ActualizarVideojuegoDialog(
                 this,
@@ -294,5 +307,6 @@ public class ActualizarVideojuegoVista extends JFrame {
         });
     }
 }
+
 
 

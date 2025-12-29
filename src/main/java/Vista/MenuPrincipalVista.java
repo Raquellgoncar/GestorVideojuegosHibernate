@@ -12,6 +12,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ResourceBundle;
 import javax.swing.*;
 
 /**
@@ -28,16 +29,19 @@ public class MenuPrincipalVista extends JFrame {
     private Image fondoNormal;
     private ImageIcon fondoGif;
 
+    private ResourceBundle texts;
+
     public MenuPrincipalVista(Usuario usuario) {
         this.usuario = usuario;
 
-        setTitle("Menú principal");
+        texts = ResourceBundle.getBundle("i18n.messages");
+
+        setTitle(texts.getString("menu.title"));
         setSize(700, 500);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(true);
 
-        // ===== CARGA DE FONDOS =====
         var urlNormal = getClass().getResource("/img/images.jpg");
         var urlGif = getClass().getResource("/img/fondoMenu.gif");
 
@@ -49,7 +53,6 @@ public class MenuPrincipalVista extends JFrame {
             fondoGif = new ImageIcon(urlGif);
         }
 
-        // Fondo inicial
         imagenFondo = fondoNormal;
 
         initComponents();
@@ -77,10 +80,10 @@ public class MenuPrincipalVista extends JFrame {
 
         GridBagConstraints gbc;
 
-        /* ================= TÍTULO ================= */
-        lblTitulo = new JLabel("MENU PRINCIPAL");
+        lblTitulo = new JLabel(texts.getString("menu.title"));
         lblTitulo.setForeground(Color.WHITE);
         lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
+        lblTitulo.setToolTipText("Menú principal de la aplicación");
 
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -89,36 +92,38 @@ public class MenuPrincipalVista extends JFrame {
         gbc.insets = new Insets(30, 20, 10, 20);
         root.add(lblTitulo, gbc);
 
-        /* ================= PANEL CENTRAL ================= */
         JPanel panelCentral = new JPanel();
         panelCentral.setLayout(new BoxLayout(panelCentral, BoxLayout.Y_AXIS));
         panelCentral.setOpaque(false);
         panelCentral.setBorder(BorderFactory.createEmptyBorder(20, 40, 40, 40));
 
-        btnMostrar = crearBoton("Mostrar Videojuegos");
-        btnModificar = crearBoton("Modificar Videojuegos");
-        btnFavoritos = crearBoton("Mostrar Favoritos");
-        btnPerfil = crearBoton("Perfil");
+        btnMostrar = crearBoton(texts.getString("menu.show"));
+        btnMostrar.setToolTipText("Ver el listado de videojuegos");
 
-        //Para abrir mostrar
+        btnModificar = crearBoton(texts.getString("menu.modify"));
+        btnModificar.setToolTipText("Modificar o eliminar videojuegos");
+
+        btnFavoritos = crearBoton(texts.getString("menu.favorites"));
+        btnFavoritos.setToolTipText("Ver tus videojuegos favoritos");
+
+        btnPerfil = crearBoton(texts.getString("menu.profile"));
+        btnPerfil.setToolTipText("Ver y editar tu perfil");
+
         btnMostrar.addActionListener(e -> {
             new ListadoVideojuegosVista(usuario).setVisible(true);
             dispose();
         });
 
-        //Para abrir modificar
         btnModificar.addActionListener(e -> {
             new ModificarVideojuegosVista(usuario).setVisible(true);
             dispose();
         });
 
-        //Para abrir favoritos
         btnFavoritos.addActionListener(e -> {
             new MostrarFavoritosVista(usuario).setVisible(true);
             dispose();
         });
 
-        //Para abrir perfil
         btnPerfil.addActionListener(e -> {
             new PerfilVista(usuario).setVisible(true);
             dispose();
@@ -139,9 +144,9 @@ public class MenuPrincipalVista extends JFrame {
         gbc.anchor = GridBagConstraints.CENTER;
         root.add(panelCentral, gbc);
 
-        /* ================= BOTÓN ATRÁS ================= */
-        btnAtras = new JButton("Atrás");
+        btnAtras = new JButton(texts.getString("menu.back"));
         btnAtras.setFocusPainted(false);
+        btnAtras.setToolTipText("Cerrar sesión y volver al login");
         btnAtras.addActionListener(e -> {
             new LoginVista().setVisible(true);
             dispose();
@@ -159,7 +164,6 @@ public class MenuPrincipalVista extends JFrame {
         adaptarTamano();
     }
 
-    /* ================= ESCALADO ================= */
     private void adaptarTamano() {
 
         int ancho = getWidth();
@@ -199,7 +203,6 @@ public class MenuPrincipalVista extends JFrame {
 
         Component[] comps = btnMostrar.getParent().getComponents();
         for (Component comp : comps) {
-
             if (comp instanceof Box.Filler) {
                 Box.Filler filler = (Box.Filler) comp;
                 filler.changeShape(
@@ -208,17 +211,17 @@ public class MenuPrincipalVista extends JFrame {
                         new Dimension(0, separacion)
                 );
             }
-
         }
 
-        btnAtras.setPreferredSize(new Dimension((int) (120 * escala), (int) (28 * escala)));
+        btnAtras.setPreferredSize(
+                new Dimension((int) (120 * escala), (int) (28 * escala))
+        );
         btnAtras.setFont(fuenteBoton);
 
         revalidate();
         repaint();
     }
 
-    /* ================= BOTÓN MORADO + HOVER ================= */
     private JButton crearBoton(String texto) {
 
         JButton boton = new JButton(texto) {
@@ -267,3 +270,7 @@ public class MenuPrincipalVista extends JFrame {
         return boton;
     }
 }
+
+
+
+

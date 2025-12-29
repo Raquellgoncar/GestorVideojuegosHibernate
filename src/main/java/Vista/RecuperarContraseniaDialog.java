@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -29,8 +30,14 @@ public class RecuperarContraseniaDialog extends JDialog {
     private UsuarioDAO usuarioDAO = new UsuarioDAO_imp();
     private boolean passwordGenerada = false;
 
+    private ResourceBundle texts;
+
     public RecuperarContraseniaDialog(JFrame parent) {
-        super(parent, "Recuperación de contraseña", true);
+        super(parent, true);
+
+        texts = ResourceBundle.getBundle("i18n.messages");
+
+        setTitle(texts.getString("recover.title"));
         setSize(420, 260);
         setLocationRelativeTo(parent);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -49,7 +56,7 @@ public class RecuperarContraseniaDialog extends JDialog {
         gbc.anchor = GridBagConstraints.WEST;
 
         /* ---------- TÍTULO ---------- */
-        JLabel lblTitulo = new JLabel("Recuperación de contraseña");
+        JLabel lblTitulo = new JLabel(texts.getString("recover.title"));
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 16));
 
         gbc.gridx = 0;
@@ -65,16 +72,16 @@ public class RecuperarContraseniaDialog extends JDialog {
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.anchor = GridBagConstraints.EAST;
-        panel.add(new JLabel("Email:"), gbc);
+        panel.add(new JLabel(texts.getString("recover.email") + ":"), gbc);
 
-        txtEmail = new JTextField("Email");
+        txtEmail = new JTextField(texts.getString("recover.email"));
         txtEmail.setPreferredSize(new Dimension(220, 26));
         txtEmail.setForeground(Color.GRAY);
 
         txtEmail.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                if (txtEmail.getText().equals("Email")) {
+                if (txtEmail.getText().equals(texts.getString("recover.email"))) {
                     txtEmail.setText("");
                     txtEmail.setForeground(Color.BLACK);
                 }
@@ -83,7 +90,7 @@ public class RecuperarContraseniaDialog extends JDialog {
             @Override
             public void focusLost(FocusEvent e) {
                 if (txtEmail.getText().isEmpty()) {
-                    txtEmail.setText("Email");
+                    txtEmail.setText(texts.getString("recover.email"));
                     txtEmail.setForeground(Color.GRAY);
                 }
             }
@@ -94,7 +101,7 @@ public class RecuperarContraseniaDialog extends JDialog {
         panel.add(txtEmail, gbc);
 
         /* ---------- BOTÓN RECUPERAR ---------- */
-        btnRecuperar = new JButton("Recuperar contraseña");
+        btnRecuperar = new JButton(texts.getString("recover.button"));
 
         gbc.gridy = 2;
         gbc.gridx = 0;
@@ -102,8 +109,8 @@ public class RecuperarContraseniaDialog extends JDialog {
         gbc.anchor = GridBagConstraints.CENTER;
         panel.add(btnRecuperar, gbc);
 
-        /* ---------- BOTÓN ACEPTAR ---------- */
-        btnCancelar = new JButton("Cancelar");
+        /* ---------- BOTÓN CANCELAR ---------- */
+        btnCancelar = new JButton(texts.getString("recover.cancel"));
 
         gbc.gridy = 3;
         gbc.insets = new Insets(15, 6, 6, 6);
@@ -123,30 +130,36 @@ public class RecuperarContraseniaDialog extends JDialog {
         String email = txtEmail.getText().trim();
 
         /* Email vacío */
-        if (email.isEmpty() || email.equals("Email")) {
-            JOptionPane.showMessageDialog(this,
-                    "Introduce un email",
+        if (email.isEmpty() || email.equals(texts.getString("recover.email"))) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    texts.getString("recover.error.email.empty"),
                     "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
 
         /* Email válido */
         if (!Pattern.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$", email)) {
-            JOptionPane.showMessageDialog(this,
-                    "Formato de email no válido",
+            JOptionPane.showMessageDialog(
+                    this,
+                    texts.getString("recover.error.email.format"),
                     "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
 
         Usuario usuario = usuarioDAO.fetchByEmail(email);
 
         if (usuario == null) {
-            JOptionPane.showMessageDialog(this,
-                    "No existe ningún usuario con ese email",
+            JOptionPane.showMessageDialog(
+                    this,
+                    texts.getString("recover.error.email.notfound"),
                     "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
 
@@ -155,7 +168,6 @@ public class RecuperarContraseniaDialog extends JDialog {
                 .toString()
                 .substring(0, 8);
 
-        /* Guardar encriptada */
         usuario.setPasswordHash(
                 PasswordService.hashPassword(nuevaPassword)
         );
@@ -167,10 +179,12 @@ public class RecuperarContraseniaDialog extends JDialog {
                 nuevaPassword
         );
 
-        JOptionPane.showMessageDialog(this,
-                "Se ha enviado una nueva contraseña a tu email",
-                "Recuperación completada",
-                JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(
+                this,
+                texts.getString("recover.success.message"),
+                texts.getString("recover.success.title"),
+                JOptionPane.INFORMATION_MESSAGE
+        );
 
         dispose();
     }

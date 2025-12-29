@@ -40,8 +40,6 @@ public class LoginVista extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(true);
 
-        // 🔹 Forzar idioma (cambia a "es" o "en" para probar)
-        Locale.setDefault(new Locale("en"));
         texts = ResourceBundle.getBundle("i18n.messages");
 
         var url = getClass().getResource("/img/imagenFondo.png");
@@ -84,40 +82,41 @@ public class LoginVista extends JFrame {
         gbc.insets = new Insets(60, 0, 0, 0);
         root.add(panel, gbc);
 
-        /* ---------- TÍTULO (NO TRADUCIR) ---------- */
         JLabel lblTitulo = new JLabel("CheckPoint", SwingConstants.CENTER);
         lblTitulo.setFont(new Font("Wide Latin", Font.PLAIN, 40));
         lblTitulo.setForeground(Color.WHITE);
         lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblTitulo.setMaximumSize(new Dimension(500, 60));
+        lblTitulo.setToolTipText("Aplicación de gestión de videojuegos");
 
         panel.add(lblTitulo);
         panel.add(Box.createRigidArea(new Dimension(0, 30)));
 
-        /* ---------- USERNAME ---------- */
         txtUsername = new JTextField();
         txtUsername.setMaximumSize(new Dimension(280, 32));
         addPlaceholder(txtUsername, texts.getString("login.username"));
+        txtUsername.setToolTipText("Introduce tu nombre de usuario");
 
         panel.add(txtUsername);
         panel.add(Box.createRigidArea(new Dimension(0, 18)));
 
-        /* ---------- PASSWORD ---------- */
         txtPassword = new JPasswordField();
         txtPassword.setMaximumSize(new Dimension(280, 32));
         addPasswordPlaceholder(txtPassword, texts.getString("login.password"));
+        txtPassword.setToolTipText("Introduce tu contraseña");
 
         panel.add(txtPassword);
         panel.add(Box.createRigidArea(new Dimension(0, 14)));
 
-        /* ---------- RECUPERAR ---------- */
         JLabel lblOlvidado = new JLabel(texts.getString("login.forgot"));
         lblOlvidado.setFont(new Font("Arial", Font.BOLD, 11));
         lblOlvidado.setForeground(Color.WHITE);
         lblOlvidado.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblOlvidado.setToolTipText("Pulsa para recuperar tu contraseña");
 
         btnRecuperar = crearBotonLilaSuave(texts.getString("login.recover"));
         btnRecuperar.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnRecuperar.setToolTipText("Recuperar contraseña mediante email");
         btnRecuperar.addActionListener(e -> {
             RecuperarContraseniaDialog dialog = new RecuperarContraseniaDialog(this);
             dialog.setVisible(true);
@@ -128,26 +127,29 @@ public class LoginVista extends JFrame {
         panel.add(btnRecuperar);
         panel.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        /* ---------- ACCEDER ---------- */
         btnAcceder = crearBotonMorado(texts.getString("login.access"));
         btnAcceder.setFont(new Font("Segoe UI Black", Font.PLAIN, 20));
         btnAcceder.setMaximumSize(new Dimension(280, 40));
         btnAcceder.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnAcceder.setToolTipText("Acceder a la aplicación");
         btnAcceder.addActionListener(e -> login());
 
+        getRootPane().setDefaultButton(btnAcceder);
+        
         panel.add(btnAcceder);
         panel.add(Box.createRigidArea(new Dimension(0, 18)));
 
-        /* ---------- REGISTRO ---------- */
         JLabel lblRegistro = new JLabel(texts.getString("login.noaccount"));
         lblRegistro.setFont(new Font("Arial", Font.BOLD, 13));
         lblRegistro.setForeground(Color.WHITE);
         lblRegistro.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblRegistro.setToolTipText("Crear una nueva cuenta");
 
         btnRegistrar = crearBotonMorado(texts.getString("login.register"));
         btnRegistrar.setFont(new Font("Segoe UI Black", Font.PLAIN, 20));
         btnRegistrar.setMaximumSize(new Dimension(280, 40));
         btnRegistrar.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnRegistrar.setToolTipText("Registrar un nuevo usuario");
         btnRegistrar.addActionListener(e -> {
             RegistroDialog dialog = new RegistroDialog(this);
             dialog.setVisible(true);
@@ -157,10 +159,20 @@ public class LoginVista extends JFrame {
         panel.add(Box.createRigidArea(new Dimension(0, 5)));
         panel.add(btnRegistrar);
 
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        JButton btnIdioma = crearBotonMorado(texts.getString("login.language"));
+        btnIdioma.setFont(new Font("Segoe UI Black", Font.PLAIN, 14));
+        btnIdioma.setMaximumSize(new Dimension(200, 34));
+        btnIdioma.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnIdioma.setToolTipText("Seleccionar el idioma de la aplicación");
+        btnIdioma.addActionListener(e -> seleccionarIdioma());
+
+        panel.add(btnIdioma);
+
         SwingUtilities.invokeLater(() -> root.requestFocusInWindow());
     }
 
-    /* ---------- LOGIN ---------- */
     private void login() {
 
         String username = txtUsername.getText().trim();
@@ -203,11 +215,66 @@ public class LoginVista extends JFrame {
     }
 
     private void abrirPantallaPrincipal(Usuario usuario) {
-        new MenuPrincipalVista(usuario).setVisible(true);
         dispose();
+        new SplashScreenVista(usuario).setVisible(true);
     }
 
-    /* ---------- PLACEHOLDERS ---------- */
+    private void seleccionarIdioma() {
+
+        JDialog dialog = new JDialog(this, texts.getString("language.title"), true);
+        dialog.setSize(320, 180);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout(10, 10));
+
+        JLabel lblTexto = new JLabel(texts.getString("language.select"), SwingConstants.CENTER);
+        lblTexto.setBorder(BorderFactory.createEmptyBorder(15, 10, 5, 10));
+        dialog.add(lblTexto, BorderLayout.NORTH);
+
+        JRadioButton rbEs = new JRadioButton(texts.getString("language.es"));
+        JRadioButton rbEn = new JRadioButton(texts.getString("language.en"));
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(rbEs);
+        group.add(rbEn);
+
+        if (Locale.getDefault().getLanguage().equals("en")) {
+            rbEn.setSelected(true);
+        } else {
+            rbEs.setSelected(true);
+        }
+
+        JPanel panelRadios = new JPanel();
+        panelRadios.add(rbEs);
+        panelRadios.add(rbEn);
+        dialog.add(panelRadios, BorderLayout.CENTER);
+
+        JButton btnCancelar = new JButton(texts.getString("language.cancel"));
+        JButton btnAceptar = new JButton(texts.getString("language.accept"));
+
+        btnCancelar.addActionListener(e -> dialog.dispose());
+
+        btnAceptar.addActionListener(e -> {
+            if (rbEs.isSelected()) {
+                Locale.setDefault(new Locale("es"));
+            } else if (rbEn.isSelected()) {
+                Locale.setDefault(new Locale("en"));
+            }
+
+            dialog.dispose();
+            dispose();
+            new LoginVista().setVisible(true);
+        });
+
+        JPanel panelBotones = new JPanel(new BorderLayout());
+        panelBotones.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
+        panelBotones.add(btnCancelar, BorderLayout.WEST);
+        panelBotones.add(btnAceptar, BorderLayout.EAST);
+
+        dialog.add(panelBotones, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
+    }
+
     private void addPlaceholder(JTextField field, String text) {
         field.setText(text);
         field.setForeground(Color.GRAY);
@@ -257,7 +324,6 @@ public class LoginVista extends JFrame {
         });
     }
 
-    /* ---------- BOTONES ---------- */
     private JButton crearBotonMorado(String texto) {
         JButton boton = new JButton(texto) {
             @Override
@@ -327,3 +393,4 @@ public class LoginVista extends JFrame {
         SwingUtilities.invokeLater(() -> new LoginVista().setVisible(true));
     }
 }
+

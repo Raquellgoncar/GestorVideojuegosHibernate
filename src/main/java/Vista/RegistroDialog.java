@@ -10,6 +10,7 @@ import Modelo.DAO.Imp.UsuarioDAO_imp;
 import Modelo.util.PasswordService;
 import javax.swing.*;
 import java.awt.*;
+import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
 
@@ -27,12 +28,18 @@ public class RegistroDialog extends JDialog {
     private JButton btnCancelar;
 
     private UsuarioDAO usuarioDAO = new UsuarioDAO_imp();
+    private ResourceBundle texts;
 
     public RegistroDialog(JFrame parent) {
-        super(parent, "Registro de usuario", true);
+        super(parent, true);
+
+        texts = ResourceBundle.getBundle("i18n.messages");
+
+        setTitle(texts.getString("register.title"));
         setSize(420, 300);
         setLocationRelativeTo(parent);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
         initComponents();
     }
 
@@ -47,8 +54,9 @@ public class RegistroDialog extends JDialog {
         gbc.anchor = GridBagConstraints.WEST;
 
         // USERNAME
-        gbc.gridx = 0; gbc.gridy = 0;
-        panel.add(new JLabel("Username:"), gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panel.add(new JLabel(texts.getString("register.username") + ":"), gbc);
 
         txtUsername = new JTextField();
         txtUsername.setPreferredSize(new Dimension(200, 26));
@@ -56,8 +64,9 @@ public class RegistroDialog extends JDialog {
         panel.add(txtUsername, gbc);
 
         // NOMBRE
-        gbc.gridx = 0; gbc.gridy++;
-        panel.add(new JLabel("Nombre:"), gbc);
+        gbc.gridx = 0;
+        gbc.gridy++;
+        panel.add(new JLabel(texts.getString("register.name") + ":"), gbc);
 
         txtNombre = new JTextField();
         txtNombre.setPreferredSize(new Dimension(200, 26));
@@ -65,8 +74,9 @@ public class RegistroDialog extends JDialog {
         panel.add(txtNombre, gbc);
 
         // EMAIL
-        gbc.gridx = 0; gbc.gridy++;
-        panel.add(new JLabel("Email:"), gbc);
+        gbc.gridx = 0;
+        gbc.gridy++;
+        panel.add(new JLabel(texts.getString("register.email") + ":"), gbc);
 
         txtEmail = new JTextField();
         txtEmail.setPreferredSize(new Dimension(200, 26));
@@ -74,8 +84,9 @@ public class RegistroDialog extends JDialog {
         panel.add(txtEmail, gbc);
 
         // CONTRASEÑA
-        gbc.gridx = 0; gbc.gridy++;
-        panel.add(new JLabel("Contraseña:"), gbc);
+        gbc.gridx = 0;
+        gbc.gridy++;
+        panel.add(new JLabel(texts.getString("register.password") + ":"), gbc);
 
         txtPassword = new JPasswordField();
         txtPassword.setPreferredSize(new Dimension(200, 26));
@@ -83,7 +94,7 @@ public class RegistroDialog extends JDialog {
         panel.add(txtPassword, gbc);
 
         // BOTÓN CANCELAR
-        btnCancelar = new JButton("Cancelar");
+        btnCancelar = new JButton(texts.getString("register.cancel"));
         btnCancelar.setPreferredSize(new Dimension(90, 30));
 
         gbc.gridx = 0;
@@ -92,9 +103,11 @@ public class RegistroDialog extends JDialog {
         panel.add(btnCancelar, gbc);
 
         // BOTÓN REGISTRAR
-        btnRegistrar = new JButton("Registrar");
+        btnRegistrar = new JButton(texts.getString("register.button"));
         btnRegistrar.setPreferredSize(new Dimension(130, 34));
         btnRegistrar.setFont(new Font("Arial", Font.BOLD, 13));
+        
+        getRootPane().setDefaultButton(btnRegistrar);
 
         gbc.gridx = 1;
         gbc.anchor = GridBagConstraints.EAST;
@@ -113,41 +126,47 @@ public class RegistroDialog extends JDialog {
         String email = txtEmail.getText().trim();
         String password = String.valueOf(txtPassword.getPassword());
 
-        //COMPROBACIONES 
-        
         // 1. CAMPOS VACÍOS
         if (username.isEmpty() || nombre.isEmpty() || email.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Todos los campos son obligatorios",
+            JOptionPane.showMessageDialog(
+                    this,
+                    texts.getString("register.error.empty"),
                     "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
 
         // 2. EMAIL VÁLIDO
         if (!Pattern.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$", email)) {
-            JOptionPane.showMessageDialog(this,
-                    "El email no tiene un formato válido",
+            JOptionPane.showMessageDialog(
+                    this,
+                    texts.getString("register.error.email.format"),
                     "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
 
         // 3. USERNAME EXISTENTE
         if (usuarioDAO.fetchByUsername(username) != null) {
-            JOptionPane.showMessageDialog(this,
-                    "El username ya existe",
+            JOptionPane.showMessageDialog(
+                    this,
+                    texts.getString("register.error.username.exists"),
                     "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
 
-        // 4. EMAIL EXISTENTE 
+        // 4. EMAIL EXISTENTE
         if (usuarioDAO.fetchByEmail(email) != null) {
-            JOptionPane.showMessageDialog(this,
-                    "El email ya está registrado",
+            JOptionPane.showMessageDialog(
+                    this,
+                    texts.getString("register.error.email.exists"),
                     "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
 
@@ -160,10 +179,12 @@ public class RegistroDialog extends JDialog {
 
         usuarioDAO.insert(u);
 
-        JOptionPane.showMessageDialog(this,
-                "Usuario registrado correctamente",
-                "Registro",
-                JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(
+                this,
+                texts.getString("register.success.message"),
+                texts.getString("register.success.title"),
+                JOptionPane.INFORMATION_MESSAGE
+        );
 
         dispose();
     }

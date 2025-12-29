@@ -16,6 +16,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -32,11 +33,15 @@ public class InsertarVideojuegoVista extends JFrame {
     private VideojuegoDAO videojuegoDAO = new VideojuegoDAO_imp();
     private FavoritoDAO favoritoDAO = new FavoritoDAO_imp();
 
+    private ResourceBundle texts;
+
     public InsertarVideojuegoVista(Usuario usuario) {
         this.usuario = usuario;
 
-        setTitle("Insertar videojuego");
-        setSize(560, 520);                 // ⬅ un poco más ancho
+        texts = ResourceBundle.getBundle("i18n.messages");
+
+        setTitle(texts.getString("insert.window.title"));
+        setSize(560, 520);
         setResizable(false);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -46,29 +51,25 @@ public class InsertarVideojuegoVista extends JFrame {
 
     private void initComponents() {
 
-        /* ===== CONTENEDOR PRINCIPAL ===== */
         setLayout(new BorderLayout());
 
-        /* ===== PANEL CENTRAL ===== */
         JPanel root = new JPanel(new GridBagLayout());
-        root.setBorder(BorderFactory.createEmptyBorder(30, 30, 0, 30)); // ⬅ más aire arriba
+        root.setBorder(BorderFactory.createEmptyBorder(30, 30, 0, 30));
         add(root, BorderLayout.CENTER);
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(14, 10, 14, 10); // ⬅ más separación vertical
+        gbc.insets = new Insets(14, 10, 14, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weighty = 0;
 
-        /* ===== TÍTULO GRANDE ===== */
-        JLabel lblTitulo = new JLabel("INSERTAR VIDEOJUEGO", SwingConstants.CENTER);
-        lblTitulo.setFont(new Font("Showcard Gothic", Font.PLAIN, 34)); // ⬅ más grande
+        /* ===== TÍTULO ===== */
+        JLabel lblTitulo = new JLabel(texts.getString("insert.title"), SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Showcard Gothic", Font.PLAIN, 34));
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
         root.add(lblTitulo, gbc);
-
         gbc.gridwidth = 1;
 
         Font fuenteLabel = new Font("Arial", Font.BOLD, 15);
@@ -76,7 +77,7 @@ public class InsertarVideojuegoVista extends JFrame {
         /* ===== CAMPOS ===== */
         gbc.gridy++;
 
-        JLabel lblT = new JLabel("Título:");
+        JLabel lblT = new JLabel(texts.getString("insert.field.title") + ":");
         lblT.setFont(fuenteLabel);
         root.add(lblT, gbc);
 
@@ -87,7 +88,7 @@ public class InsertarVideojuegoVista extends JFrame {
         gbc.gridx = 0;
         gbc.gridy++;
 
-        JLabel lblP = new JLabel("Plataforma:");
+        JLabel lblP = new JLabel(texts.getString("insert.field.platform") + ":");
         lblP.setFont(fuenteLabel);
         root.add(lblP, gbc);
 
@@ -98,7 +99,7 @@ public class InsertarVideojuegoVista extends JFrame {
         gbc.gridx = 0;
         gbc.gridy++;
 
-        JLabel lblA = new JLabel("Año:");
+        JLabel lblA = new JLabel(texts.getString("insert.field.year") + ":");
         lblA.setFont(fuenteLabel);
         root.add(lblA, gbc);
 
@@ -109,7 +110,7 @@ public class InsertarVideojuegoVista extends JFrame {
         gbc.gridx = 0;
         gbc.gridy++;
 
-        JLabel lblV = new JLabel("Valoración:");
+        JLabel lblV = new JLabel(texts.getString("insert.field.rating") + ":");
         lblV.setFont(fuenteLabel);
         root.add(lblV, gbc);
 
@@ -133,7 +134,7 @@ public class InsertarVideojuegoVista extends JFrame {
         btnFavorito.setFocusPainted(false);
         btnFavorito.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        JLabel lblFav = new JLabel("Marcar como favorito");
+        JLabel lblFav = new JLabel(texts.getString("insert.favorite"));
         lblFav.setFont(new Font("Arial", Font.BOLD, 14));
 
         panelFavorito.add(btnFavorito);
@@ -141,19 +142,13 @@ public class InsertarVideojuegoVista extends JFrame {
 
         root.add(panelFavorito, gbc);
 
-        /* ===== PANEL INFERIOR (BOTONES) ===== */
+        /* ===== BOTONES ===== */
         JPanel panelInferior = new JPanel(new BorderLayout());
         panelInferior.setBorder(BorderFactory.createEmptyBorder(5, 25, 18, 25));
         panelInferior.setOpaque(false);
 
-        JPanel panelIzq = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panelIzq.setOpaque(false);
-
-        JPanel panelDer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        panelDer.setOpaque(false);
-
         btnCancelar = crearBotonMorado(
-                "Cancelar",
+                texts.getString("insert.cancel"),
                 new Dimension(120, 32),
                 e -> {
                     new ModificarVideojuegosVista(usuario).setVisible(true);
@@ -162,34 +157,28 @@ public class InsertarVideojuegoVista extends JFrame {
         );
 
         btnAceptar = crearBotonMorado(
-                "Aceptar",
-                new Dimension(200, 38),   // ⬅ más grande
+                texts.getString("insert.accept"),
+                new Dimension(200, 38),
                 e -> validarYProcesar()
         );
 
-        panelIzq.add(btnCancelar);
-        panelDer.add(btnAceptar);
-
-        panelInferior.add(panelIzq, BorderLayout.WEST);
-        panelInferior.add(panelDer, BorderLayout.EAST);
+        getRootPane().setDefaultButton(btnAceptar);
+        
+        
+        panelInferior.add(btnCancelar, BorderLayout.WEST);
+        panelInferior.add(btnAceptar, BorderLayout.EAST);
 
         add(panelInferior, BorderLayout.SOUTH);
     }
 
-    /* ===== CAMPO DE TEXTO GRANDE ===== */
     private JTextField crearCampoTexto() {
         JTextField campo = new JTextField();
         campo.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-        campo.setPreferredSize(new Dimension(260, 34)); // ⬅ más alto
+        campo.setPreferredSize(new Dimension(260, 34));
         return campo;
     }
 
-    /* ===== BOTÓN MORADO ===== */
-    private JButton crearBotonMorado(
-            String texto,
-            Dimension tamaño,
-            ActionListener action
-    ) {
+    private JButton crearBotonMorado(String texto, Dimension tamaño, ActionListener action) {
         JButton boton = new JButton(texto) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -217,8 +206,8 @@ public class InsertarVideojuegoVista extends JFrame {
         boton.setOpaque(false);
         boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         boton.setPreferredSize(tamaño);
-
         boton.addActionListener(action);
+
         return boton;
     }
 
@@ -232,8 +221,8 @@ public class InsertarVideojuegoVista extends JFrame {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Rellena todos los campos.",
-                    "Campos incompletos",
+                    texts.getString("insert.error.empty"),
+                    texts.getString("insert.error.empty.title"),
                     JOptionPane.WARNING_MESSAGE
             );
             return;
@@ -243,8 +232,7 @@ public class InsertarVideojuegoVista extends JFrame {
         try {
             anio = Integer.parseInt(txtAnio.getText().trim());
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "El año debe ser un número entero.");
-            txtAnio.requestFocus();
+            JOptionPane.showMessageDialog(this, texts.getString("insert.error.year"));
             return;
         }
 
@@ -252,8 +240,7 @@ public class InsertarVideojuegoVista extends JFrame {
         try {
             valoracion = new BigDecimal(txtValoracion.getText().trim());
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "La valoración debe ser un número decimal.");
-            txtValoracion.requestFocus();
+            JOptionPane.showMessageDialog(this, texts.getString("insert.error.rating"));
             return;
         }
 
@@ -276,9 +263,11 @@ public class InsertarVideojuegoVista extends JFrame {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Videojuego insertado correctamente"
-                            + (btnFavorito.isSelected() ? " y marcado como favorito" : ""),
-                    "Éxito",
+                    texts.getString("insert.success")
+                            + (btnFavorito.isSelected()
+                            ? " " + texts.getString("insert.success.favorite")
+                            : ""),
+                    texts.getString("insert.success.title"),
                     JOptionPane.INFORMATION_MESSAGE
             );
 
@@ -286,17 +275,15 @@ public class InsertarVideojuegoVista extends JFrame {
             dispose();
 
         } catch (Exception ex) {
-            ex.printStackTrace();
             JOptionPane.showMessageDialog(
                     this,
-                    "Error al insertar el videojuego.",
-                    "Error",
+                    texts.getString("insert.error.generic"),
+                    texts.getString("insert.error.title"),
                     JOptionPane.ERROR_MESSAGE
             );
         }
     }
 
-    /* ===== ICONOS ===== */
     private ImageIcon cargarIconoEscalado(String ruta, int ancho, int alto) {
         ImageIcon icono = new ImageIcon(getClass().getResource(ruta));
         Image img = icono.getImage().getScaledInstance(ancho, alto, Image.SCALE_SMOOTH);

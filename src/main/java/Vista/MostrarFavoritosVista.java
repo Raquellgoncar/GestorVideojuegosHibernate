@@ -15,7 +15,7 @@ import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
-
+import java.util.ResourceBundle;
 /**
  *
  * @author Raquel
@@ -27,10 +27,14 @@ public class MostrarFavoritosVista extends JFrame {
     private DefaultTableModel modelo;
     private List<Favorito> listaFavoritos;
 
+    private ResourceBundle texts;
+
     public MostrarFavoritosVista(Usuario usuario) {
         this.usuario = usuario;
 
-        setTitle("Mis favoritos");
+        texts = ResourceBundle.getBundle("i18n.messages");
+
+        setTitle(texts.getString("favorites.window.title"));
         setSize(700, 400);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -58,7 +62,10 @@ public class MostrarFavoritosVista extends JFrame {
         setContentPane(root);
 
         /* ===== TÍTULO ===== */
-        JLabel lblTitulo = new JLabel("MIS FAVORITOS", SwingConstants.CENTER);
+        JLabel lblTitulo = new JLabel(
+                texts.getString("favorites.title"),
+                SwingConstants.CENTER
+        );
         lblTitulo.setFont(new Font("Showcard Gothic", Font.PLAIN, 28));
         lblTitulo.setForeground(Color.WHITE);
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
@@ -66,7 +73,12 @@ public class MostrarFavoritosVista extends JFrame {
 
         /* ===== TABLA ===== */
         modelo = new DefaultTableModel(
-                new Object[]{"Título", "Plataforma", "Año", "Valoración"},
+                new Object[]{
+                    texts.getString("favorites.table.title"),
+                    texts.getString("favorites.table.platform"),
+                    texts.getString("favorites.table.year"),
+                    texts.getString("favorites.table.rating")
+                },
                 0
         ) {
             @Override
@@ -97,7 +109,7 @@ public class MostrarFavoritosVista extends JFrame {
         panelSur.setOpaque(false);
 
         JButton btnAtras = crearBotonMorado(
-                "Atrás",
+                texts.getString("favorites.back"),
                 new Dimension(120, 30),
                 e -> {
                     new MenuPrincipalVista(usuario).setVisible(true);
@@ -106,7 +118,7 @@ public class MostrarFavoritosVista extends JFrame {
         );
 
         JButton btnQuitar = crearBotonMorado(
-                "Quitar de favoritos",
+                texts.getString("favorites.remove"),
                 new Dimension(200, 40),
                 e -> quitarFavorito()
         );
@@ -125,7 +137,7 @@ public class MostrarFavoritosVista extends JFrame {
         root.add(panelSur, BorderLayout.SOUTH);
     }
 
-    /* ===== BOTÓN MORADO REUTILIZABLE ===== */
+    /* ===== BOTÓN MORADO ===== */
     private JButton crearBotonMorado(
             String texto,
             Dimension tamaño,
@@ -164,7 +176,6 @@ public class MostrarFavoritosVista extends JFrame {
         boton.setPreferredSize(tamaño);
 
         boton.addActionListener(action);
-
         return boton;
     }
 
@@ -183,10 +194,10 @@ public class MostrarFavoritosVista extends JFrame {
         for (Favorito f : listaFavoritos) {
             Videojuego v = f.getVideojuegoId();
             modelo.addRow(new Object[]{
-                    v.getTitulo(),
-                    v.getPlataforma(),
-                    v.getAnio(),
-                    v.getValoracion()
+                v.getTitulo(),
+                v.getPlataforma(),
+                v.getAnio(),
+                v.getValoracion()
             });
         }
     }
@@ -199,8 +210,8 @@ public class MostrarFavoritosVista extends JFrame {
         if (fila == -1) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Selecciona un videojuego de la tabla",
-                    "Aviso",
+                    texts.getString("favorites.select.warning"),
+                    texts.getString("favorites.select.title"),
                     JOptionPane.WARNING_MESSAGE
             );
             return;
@@ -208,8 +219,8 @@ public class MostrarFavoritosVista extends JFrame {
 
         int opcion = JOptionPane.showConfirmDialog(
                 this,
-                "¿Quieres quitar este videojuego de favoritos?",
-                "Quitar de favoritos",
+                texts.getString("favorites.confirm.text"),
+                texts.getString("favorites.confirm.title"),
                 JOptionPane.YES_NO_OPTION
         );
 

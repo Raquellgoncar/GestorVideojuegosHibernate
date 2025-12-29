@@ -11,6 +11,7 @@ import Modelo.Usuario;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
@@ -26,17 +27,19 @@ public class ListadoVideojuegosVista extends JFrame {
     private VideojuegoDAO videojuegoDAO;
 
     private Image imagenFondo;
+    private ResourceBundle texts;
 
     public ListadoVideojuegosVista(Usuario usuario) {
         this.usuario = usuario;
         this.videojuegoDAO = new VideojuegoDAO_imp();
 
-        setTitle("Listado de videojuegos");
+        texts = ResourceBundle.getBundle("i18n.messages");
+
+        setTitle(texts.getString("list.window.title"));
         setSize(700, 400);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-       
         var url = getClass().getResource("/img/fondoListado.jpg");
         if (url != null) {
             imagenFondo = new ImageIcon(url).getImage();
@@ -54,19 +57,17 @@ public class ListadoVideojuegosVista extends JFrame {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 if (imagenFondo != null) {
-                    g.drawImage(
-                            imagenFondo,
-                            0, 0,
-                            getWidth(), getHeight(),
-                            this
-                    );
+                    g.drawImage(imagenFondo, 0, 0, getWidth(), getHeight(), this);
                 }
             }
         };
         setContentPane(root);
 
         /* ===== TÍTULO ===== */
-        JLabel lblTitulo = new JLabel("VIDEOJUEGOS REGISTRADOS", SwingConstants.CENTER);
+        JLabel lblTitulo = new JLabel(
+                texts.getString("list.title"),
+                SwingConstants.CENTER
+        );
         lblTitulo.setFont(new Font("Showcard Gothic", Font.PLAIN, 28));
         lblTitulo.setForeground(Color.WHITE);
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
@@ -74,7 +75,12 @@ public class ListadoVideojuegosVista extends JFrame {
 
         /* ===== TABLA ===== */
         modelo = new DefaultTableModel(
-                new Object[]{"Título", "Plataforma", "Año", "Valoración"},
+                new Object[]{
+                        texts.getString("list.col.title"),
+                        texts.getString("list.col.platform"),
+                        texts.getString("list.col.year"),
+                        texts.getString("list.col.rating")
+                },
                 0
         ) {
             @Override
@@ -131,7 +137,7 @@ public class ListadoVideojuegosVista extends JFrame {
     /* ===== BOTÓN ATRÁS ===== */
     private JButton crearBotonMoradoAtras() {
 
-        JButton boton = new JButton("Atrás") {
+        JButton boton = new JButton(texts.getString("common.back")) {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
@@ -188,3 +194,4 @@ public class ListadoVideojuegosVista extends JFrame {
         }
     }
 }
+

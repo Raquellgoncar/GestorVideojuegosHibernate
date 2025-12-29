@@ -16,6 +16,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -34,6 +35,8 @@ public class ActualizarVideojuegoDialog extends JDialog {
     private VideojuegoDAO videojuegoDAO = new VideojuegoDAO_imp();
     private FavoritoDAO favoritoDAO = new FavoritoDAO_imp();
 
+    private ResourceBundle texts;
+
     public ActualizarVideojuegoDialog(
             JFrame parent,
             Usuario usuario,
@@ -45,7 +48,9 @@ public class ActualizarVideojuegoDialog extends JDialog {
         this.videojuego = videojuego;
         this.eraFavorito = esFavorito;
 
-        setTitle("Actualizar videojuego");
+        texts = ResourceBundle.getBundle("i18n.messages");
+
+        setTitle(texts.getString("update.dialog.window.title"));
         setSize(560, 580);
         setLocationRelativeTo(parent);
         setResizable(false);
@@ -67,7 +72,10 @@ public class ActualizarVideojuegoDialog extends JDialog {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         /* ===== TÍTULO ===== */
-        JLabel lblTitulo = new JLabel("ACTUALIZAR VIDEOJUEGO", SwingConstants.CENTER);
+        JLabel lblTitulo = new JLabel(
+                texts.getString("update.dialog.title"),
+                SwingConstants.CENTER
+        );
         lblTitulo.setFont(new Font("Showcard Gothic", Font.PLAIN, 34));
 
         gbc.gridx = 0;
@@ -91,7 +99,7 @@ public class ActualizarVideojuegoDialog extends JDialog {
         /* ===== CAMPOS ===== */
         gbc.gridy++;
 
-        JLabel lblT = new JLabel("Título:");
+        JLabel lblT = new JLabel(texts.getString("update.field.title") + ":");
         lblT.setFont(fuenteLabel);
         root.add(lblT, gbc);
 
@@ -102,7 +110,7 @@ public class ActualizarVideojuegoDialog extends JDialog {
         gbc.gridx = 0;
         gbc.gridy++;
 
-        JLabel lblP = new JLabel("Plataforma:");
+        JLabel lblP = new JLabel(texts.getString("update.field.platform") + ":");
         lblP.setFont(fuenteLabel);
         root.add(lblP, gbc);
 
@@ -113,7 +121,7 @@ public class ActualizarVideojuegoDialog extends JDialog {
         gbc.gridx = 0;
         gbc.gridy++;
 
-        JLabel lblA = new JLabel("Año:");
+        JLabel lblA = new JLabel(texts.getString("update.field.year") + ":");
         lblA.setFont(fuenteLabel);
         root.add(lblA, gbc);
 
@@ -124,7 +132,7 @@ public class ActualizarVideojuegoDialog extends JDialog {
         gbc.gridx = 0;
         gbc.gridy++;
 
-        JLabel lblV = new JLabel("Valoración:");
+        JLabel lblV = new JLabel(texts.getString("update.field.rating") + ":");
         lblV.setFont(fuenteLabel);
         root.add(lblV, gbc);
 
@@ -148,7 +156,7 @@ public class ActualizarVideojuegoDialog extends JDialog {
         btnFavorito.setFocusPainted(false);
         btnFavorito.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        JLabel lblFav = new JLabel("Favorito");
+        JLabel lblFav = new JLabel(texts.getString("update.favorite"));
         lblFav.setFont(new Font("Arial", Font.BOLD, 14));
 
         panelFav.add(btnFavorito);
@@ -161,29 +169,22 @@ public class ActualizarVideojuegoDialog extends JDialog {
         panelInferior.setBorder(BorderFactory.createEmptyBorder(5, 25, 18, 25));
         panelInferior.setOpaque(false);
 
-        JPanel panelIzq = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panelIzq.setOpaque(false);
-
-        JPanel panelDer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        panelDer.setOpaque(false);
-
         btnCancelar = crearBotonMorado(
-                "Cancelar",
+                texts.getString("update.cancel"),
                 new Dimension(120, 32),
                 e -> dispose()
         );
 
         btnAceptar = crearBotonMorado(
-                "Aceptar",
+                texts.getString("update.accept"),
                 new Dimension(200, 38),
                 e -> validarYActualizar()
         );
 
-        panelIzq.add(btnCancelar);
-        panelDer.add(btnAceptar);
-
-        panelInferior.add(panelIzq, BorderLayout.WEST);
-        panelInferior.add(panelDer, BorderLayout.EAST);
+        getRootPane().setDefaultButton(btnAceptar);
+        
+        panelInferior.add(btnCancelar, BorderLayout.WEST);
+        panelInferior.add(btnAceptar, BorderLayout.EAST);
 
         add(panelInferior, BorderLayout.SOUTH);
 
@@ -280,14 +281,17 @@ public class ActualizarVideojuegoDialog extends JDialog {
                 || txtAnio.getText().trim().isEmpty()
                 || txtValoracion.getText().trim().isEmpty()) {
 
-            JOptionPane.showMessageDialog(this, "Rellena todos los campos.");
+            JOptionPane.showMessageDialog(
+                    this,
+                    texts.getString("update.error.empty")
+            );
             return;
         }
 
         int opcion = JOptionPane.showConfirmDialog(
                 this,
-                "¿Seguro que deseas guardar los cambios?",
-                "Confirmar",
+                texts.getString("update.confirm"),
+                texts.getString("update.confirm.title"),
                 JOptionPane.YES_NO_OPTION
         );
 
@@ -319,16 +323,20 @@ public class ActualizarVideojuegoDialog extends JDialog {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Videojuego actualizado correctamente",
-                    "Éxito",
+                    texts.getString("update.success"),
+                    texts.getString("update.success.title"),
                     JOptionPane.INFORMATION_MESSAGE
             );
 
             dispose();
 
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error al actualizar el videojuego.");
+            JOptionPane.showMessageDialog(
+                    this,
+                    texts.getString("update.error.generic"),
+                    texts.getString("update.error.title"),
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
@@ -338,3 +346,4 @@ public class ActualizarVideojuegoDialog extends JDialog {
         return new ImageIcon(img);
     }
 }
+

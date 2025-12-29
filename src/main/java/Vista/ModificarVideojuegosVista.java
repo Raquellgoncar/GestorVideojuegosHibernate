@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -26,10 +27,14 @@ public class ModificarVideojuegosVista extends JFrame {
 
     private Box.Filler sep1, sep2;
 
+    private ResourceBundle texts;
+
     public ModificarVideojuegosVista(Usuario usuario) {
         this.usuario = usuario;
 
-        setTitle("Modificar videojuegos");
+        texts = ResourceBundle.getBundle("i18n.messages");
+
+        setTitle(texts.getString("modify.window.title"));
         setSize(800, 550);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -69,7 +74,7 @@ public class ModificarVideojuegosVista extends JFrame {
         GridBagConstraints gbc;
 
         /* ================= TÍTULO ================= */
-        lblTitulo = new JLabel("MODIFICAR VIDEOJUEGOS");
+        lblTitulo = new JLabel(texts.getString("modify.title"));
         lblTitulo.setForeground(Color.WHITE);
         lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -85,9 +90,9 @@ public class ModificarVideojuegosVista extends JFrame {
         panelCentral.setLayout(new BoxLayout(panelCentral, BoxLayout.X_AXIS));
         panelCentral.setOpaque(false);
 
-        btnInsertar = crearBoton("Insertar");
-        btnActualizar = crearBoton("Actualizar");
-        btnEliminar = crearBoton("Eliminar");
+        btnInsertar = crearBoton(texts.getString("modify.insert"));
+        btnActualizar = crearBoton(texts.getString("modify.update"));
+        btnEliminar = crearBoton(texts.getString("modify.delete"));
 
         btnInsertar.setAlignmentY(Component.CENTER_ALIGNMENT);
         btnActualizar.setAlignmentY(Component.CENTER_ALIGNMENT);
@@ -110,26 +115,24 @@ public class ModificarVideojuegosVista extends JFrame {
         gbc.insets = new Insets(90, 0, 0, 0);
         root.add(panelCentral, gbc);
 
-        //Botón insertar
+        // ===== ACCIONES =====
         btnInsertar.addActionListener(e -> {
             new InsertarVideojuegoVista(usuario).setVisible(true);
             dispose();
         });
 
-        //Botón actualizar
         btnActualizar.addActionListener(e -> {
             new ActualizarVideojuegoVista(usuario).setVisible(true);
             dispose();
         });
 
-        //Botón eliminar
         btnEliminar.addActionListener(e -> {
             new EliminarVideojuegoVista(usuario).setVisible(true);
             dispose();
         });
 
         /* ================= BOTÓN ATRÁS ================= */
-        btnAtras = new JButton("Atrás");
+        btnAtras = new JButton(texts.getString("common.back"));
         btnAtras.setFocusPainted(false);
         btnAtras.addActionListener(e -> {
             new MenuPrincipalVista(usuario).setVisible(true);
@@ -218,9 +221,6 @@ public class ModificarVideojuegosVista extends JFrame {
         sep1.changeShape(sep, sep, sep);
         sep2.changeShape(sep, sep, sep);
 
-        revalidate();
-        repaint();
-
         Dimension tamAtras = new Dimension(
                 (int) (100 * escala),
                 (int) (30 * escala)
@@ -232,6 +232,9 @@ public class ModificarVideojuegosVista extends JFrame {
                 Font.PLAIN,
                 (int) (16 * escala)
         ));
+
+        revalidate();
+        repaint();
     }
 
     /* ================= BOTÓN MORADO ================= */
