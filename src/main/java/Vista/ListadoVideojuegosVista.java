@@ -1,0 +1,254 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package Vista;
+
+import Controlador.ListadoVideojuegosController;
+import Modelo.Videojuego;
+import Modelo.Usuario;
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+import java.util.ResourceBundle;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+
+/**
+ * Vista de listado de videojuegos del usuario.
+ * <p>
+ * Muestra en una tabla todos los videojuegos asociados al usuario
+ * autenticado, junto con información básica como plataforma, año
+ * y valoración. Incluye un fondo personalizado y un contador del
+ * total de videojuegos registrados.
+ * </p>
+ *
+ * Sigue el patrón MVC, delegando la obtención de datos y la navegación
+ * en {@link ListadoVideojuegosController}.
+ *
+ * @author Raquel
+ * @version 1.0
+ */
+public class ListadoVideojuegosVista extends JFrame {
+
+    /** Usuario autenticado */
+    private Usuario usuario;
+
+    /** Tabla de videojuegos */
+    private JTable tabla;
+
+    /** Modelo de datos de la tabla */
+    private DefaultTableModel modelo;
+
+    /** Imagen de fondo de la vista */
+    private Image imagenFondo;
+
+    /** Recursos de internacionalización */
+    private ResourceBundle texts;
+
+    /** Etiqueta que muestra el total de videojuegos */
+    private JLabel lblTotal;
+
+    /** Controlador asociado a la vista */
+    private ListadoVideojuegosController controller;
+
+    /**
+     * Constructor de la vista de listado de videojuegos.
+     *
+     * @param usuario usuario autenticado
+     */
+    public ListadoVideojuegosVista(Usuario usuario) {
+        this.usuario = usuario;
+
+        texts = ResourceBundle.getBundle("i18n.messages");
+
+        controller = new ListadoVideojuegosController(usuario);
+        controller.setVista(this);
+
+        setTitle(texts.getString("list.window.title"));
+        setSize(700, 400);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        var url = getClass().getResource("/img/fondoListado.jpg");
+        if (url != null) {
+            imagenFondo = new ImageIcon(url).getImage();
+        }
+
+        initComponents();
+        cargarVideojuegos();
+    }
+
+    /**
+     * Inicializa y organiza los componentes gráficos de la ventana.
+     */
+    private void initComponents() {
+
+        /* ===== PANEL ROOT CON FONDO ===== */
+        JPanel root = new JPanel(new BorderLayout(10, 10)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (imagenFondo != null) {
+                    g.drawImage(imagenFondo, 0, 0, getWidth(), getHeight(), this);
+                }
+            }
+        };
+        setContentPane(root);
+
+        /* ===== TÍTULO ===== */
+        JLabel lblTitulo = new JLabel(
+                texts.getString("list.title"),
+                SwingConstants.CENTER
+        );
+        lblTitulo.setFont(new Font("Showcard Gothic", Font.PLAIN, 28));
+        lblTitulo.setForeground(Color.WHITE);
+        lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
+        root.add(lblTitulo, BorderLayout.NORTH);
+
+        /* ===== TABLA ===== */
+        modelo = new DefaultTableModel(
+                new Object[]{
+                        texts.getString("list.col.title"),
+                        texts.getString("list.col.platform"),
+                        texts.getString("list.col.year"),
+                        texts.getString("list.col.rating")
+                },
+                0
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        tabla = new JTable(modelo);
+        tabla.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tabla.setRowHeight(26);
+
+        tabla.setOpaque(false);
+        tabla.setBackground(new Color(255, 255, 255, 190));
+
+        tabla.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        tabla.getTableHeader().setReorderingAllowed(false);
+        tabla.getTableHeader().setOpaque(false);
+        tabla.getTableHeader().setBackground(new Color(255, 255, 255, 200));
+
+        tabla.getColumnModel().getColumn(0).setPreferredWidth(250);
+        tabla.getColumnModel().getColumn(1).setPreferredWidth(150);
+        tabla.getColumnModel().getColumn(2).setPreferredWidth(80);
+        tabla.getColumnModel().getColumn(3).setPreferredWidth(100);
+
+        DefaultTableCellRenderer centrado = new DefaultTableCellRenderer();
+        centrado.setHorizontalAlignment(SwingConstants.CENTER);
+        tabla.getColumnModel().getColumn(2).setCellRenderer(centrado);
+        tabla.getColumnModel().getColumn(3).setCellRenderer(centrado);
+
+        tabla.setSelectionBackground(new Color(220, 220, 250));
+        tabla.setSelectionForeground(Color.BLACK);
+
+        JScrollPane scroll = new JScrollPane(tabla);
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+
+        root.add(scroll, BorderLayout.CENTER);
+
+        /* ===== PANEL INFERIOR ===== */
+        JPanel panelSur = new JPanel(new BorderLayout());
+        panelSur.setOpaque(false);
+
+        JButton btnAtras = crearBotonMoradoAtras();
+
+        JPanel panelIzq = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panelIzq.setOpaque(false);
+        panelIzq.add(btnAtras);
+
+        lblTotal = new JLabel();
+        lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblTotal.setForeground(Color.WHITE);
+
+        JPanel panelDer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        panelDer.setOpaque(false);
+        panelDer.add(lblTotal);
+
+        panelSur.add(panelIzq, BorderLayout.WEST);
+        panelSur.add(panelDer, BorderLayout.EAST);
+
+        root.add(panelSur, BorderLayout.SOUTH);
+    }
+
+    /**
+     * Crea el botón personalizado para volver al menú principal.
+     *
+     * @return botón configurado
+     */
+    private JButton crearBotonMoradoAtras() {
+
+        JButton boton = new JButton(texts.getString("common.back")) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(
+                        RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON
+                );
+
+                GradientPaint gp = new GradientPaint(
+                        0, 0, new Color(180, 120, 255),
+                        0, getHeight(), new Color(110, 40, 180)
+                );
+
+                g2.setPaint(gp);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                g2.dispose();
+
+                super.paintComponent(g);
+            }
+        };
+
+        boton.setForeground(Color.WHITE);
+        boton.setFont(new Font("Segoe UI Black", Font.PLAIN, 14));
+        boton.setFocusPainted(false);
+        boton.setBorderPainted(false);
+        boton.setContentAreaFilled(false);
+        boton.setOpaque(false);
+        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        boton.setPreferredSize(new Dimension(120, 30));
+
+        boton.addActionListener(e -> controller.volverMenu());
+
+        return boton;
+    }
+
+    /**
+     * Carga los videojuegos del usuario en la tabla y
+     * actualiza el contador total.
+     */
+    private void cargarVideojuegos() {
+
+        modelo.setRowCount(0);
+
+        List<Videojuego> videojuegos = controller.obtenerVideojuegos();
+        int total = 0;
+
+        if (videojuegos != null && !videojuegos.isEmpty()) {
+            for (Videojuego v : videojuegos) {
+                modelo.addRow(new Object[]{
+                        v.getTitulo(),
+                        v.getPlataforma(),
+                        v.getAnio(),
+                        v.getValoracion()
+                });
+                total++;
+            }
+        }
+
+        lblTotal.setText(
+                texts.getString("list.total.prefix") +
+                " " + usuario.getNombre() + ": " +
+                total
+        );
+    }
+}
+
+

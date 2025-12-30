@@ -74,10 +74,25 @@
             <artifactId>password4j</artifactId>
             <version>1.8.4</version>
         </dependency>
+        
+        <!-- Para el email -->
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+        
+        <!-- Para el FlatLaf -->
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>3.4</version>
+        </dependency>
     </dependencies>
+    
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>11</maven.compiler.release>
-        <exec.mainClass>com.mycompany.gestorvideojuegoshibernate.GestorVideojuegosHibernate</exec.mainClass>
+        <exec.mainClass>com.mycompany.gestorvideojuegoshibernate.GestorVideojuegosHibernateeee</exec.mainClass>
     </properties>
 </project>
