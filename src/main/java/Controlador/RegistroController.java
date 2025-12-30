@@ -10,18 +10,49 @@ import Modelo.Usuario;
 import Modelo.util.PasswordService;
 
 /**
+ * Controlador encargado del registro de nuevos usuarios.
+ * <p>
+ * Se encarga de validar los datos introducidos durante el registro,
+ * comprobar que no existan usuarios duplicados y almacenar el nuevo
+ * usuario en la base de datos con la contraseña cifrada.
+ * </p>
  *
  * @author Raquel
+ * @version 1.0
  */
 public class RegistroController {
 
+    /**
+     * DAO para el acceso a datos de usuarios.
+     */
     private UsuarioDAO usuarioDAO;
 
+    /**
+     * Constructor del controlador.
+     * <p>
+     * Inicializa la implementación del DAO de usuarios necesaria para
+     * acceder a la base de datos.
+     * </p>
+     */
     public RegistroController() {
         this.usuarioDAO = new UsuarioDAO_imp();
     }
 
-    //Metodo para registrar metiendo los datos necesarios
+    /**
+     * Registra un nuevo usuario en la aplicación.
+     * <p>
+     * Comprueba que el nombre de usuario y el correo electrónico no estén
+     * ya registrados. Si alguno existe, se lanza una excepción indicando
+     * el motivo del error. La contraseña se almacena cifrada mediante hash.
+     * </p>
+     *
+     * @param username nombre de usuario
+     * @param nombre nombre real del usuario
+     * @param email correo electrónico del usuario
+     * @param password contraseña en texto plano
+     * @throws IllegalArgumentException si el nombre de usuario o el email
+     *         ya existen en la base de datos
+     */
     public void registrar(
             String username,
             String nombre,

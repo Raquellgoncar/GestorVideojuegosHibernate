@@ -30,22 +30,47 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-
-
 /**
+ * Vista encargada de mostrar y gestionar la información del perfil
+ * del usuario autenticado.
+ * <p>
+ * Desde esta pantalla el usuario puede:
+ * <ul>
+ *   <li>Visualizar su nombre, username y email</li>
+ *   <li>Editar su nombre</li>
+ *   <li>Cambiar su contraseña</li>
+ *   <li>Consultar el número total de videojuegos registrados</li>
+ * </ul>
+ * </p>
+ *
+ * La lógica de negocio se delega en {@link PerfilController},
+ * siguiendo el patrón MVC.
  *
  * @author Raquel
+ * @version 1.0
  */
 public class PerfilVista extends JFrame {
 
+    /** Usuario autenticado */
     private Usuario usuario;
+
+    /** Controlador asociado a la vista */
     private PerfilController controller;
 
+    /** Etiqueta que muestra el nombre del usuario */
     private JLabel lblNombreValor;
+
+    /** Etiqueta que muestra el total de videojuegos */
     private JLabel lblTotalNumero;
 
+    /** Recursos de internacionalización */
     private ResourceBundle texts;
 
+    /**
+     * Constructor de la vista de perfil.
+     *
+     * @param usuario usuario autenticado
+     */
     public PerfilVista(Usuario usuario) {
         this.usuario = usuario;
         this.texts = ResourceBundle.getBundle("i18n.messages");
@@ -63,6 +88,10 @@ public class PerfilVista extends JFrame {
         cargarTotalJuegos();
     }
 
+    /**
+     * Inicializa y organiza todos los componentes gráficos
+     * de la vista de perfil.
+     */
     private void initComponents() {
 
         setLayout(new BorderLayout());
@@ -74,6 +103,7 @@ public class PerfilVista extends JFrame {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
 
+        /* ================= TÍTULO ================= */
         JLabel lblTitulo = new JLabel(
                 texts.getString("profile.title"),
                 SwingConstants.CENTER
@@ -93,7 +123,7 @@ public class PerfilVista extends JFrame {
         Font fuenteLabel = new Font("Arial", Font.BOLD, 15);
         Font fuenteDato = new Font("Arial", Font.PLAIN, 15);
 
-        /* ===== NOMBRE ===== */
+        /* ================= NOMBRE ================= */
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.insets = new Insets(8, 0, 12, 20);
@@ -119,7 +149,7 @@ public class PerfilVista extends JFrame {
 
         gbc.anchor = GridBagConstraints.WEST;
 
-        /* ===== USERNAME ===== */
+        /* ================= USERNAME ================= */
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.insets = new Insets(18, 0, 12, 20);
@@ -133,7 +163,7 @@ public class PerfilVista extends JFrame {
         lblUserValor.setFont(fuenteDato);
         root.add(lblUserValor, gbc);
 
-        /* ===== EMAIL ===== */
+        /* ================= EMAIL ================= */
         gbc.gridy++;
         gbc.gridx = 0;
 
@@ -146,7 +176,7 @@ public class PerfilVista extends JFrame {
         lblEmailValor.setFont(fuenteDato);
         root.add(lblEmailValor, gbc);
 
-        /* ===== CAMBIAR PASSWORD ===== */
+        /* ================= CAMBIAR CONTRASEÑA ================= */
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.gridwidth = 3;
@@ -161,7 +191,7 @@ public class PerfilVista extends JFrame {
         btnCambiarPass.addActionListener(e -> cambiarContrasena());
         root.add(btnCambiarPass, gbc);
 
-        /* ===== TOTAL JUEGOS ===== */
+        /* ================= TOTAL DE JUEGOS ================= */
         gbc.gridy++;
         gbc.insets = new Insets(25, 0, 6, 0);
 
@@ -176,7 +206,7 @@ public class PerfilVista extends JFrame {
         lblTotalNumero.setFont(new Font("Arial", Font.BOLD, 30));
         root.add(lblTotalNumero, gbc);
 
-        /* ===== ATRÁS ===== */
+        /* ================= BOTÓN ATRÁS ================= */
         JPanel panelInferior = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panelInferior.setBorder(BorderFactory.createEmptyBorder(10, 25, 15, 25));
         panelInferior.setOpaque(false);
@@ -191,15 +221,19 @@ public class PerfilVista extends JFrame {
         add(panelInferior, BorderLayout.SOUTH);
     }
 
-    /* ===== DATOS ===== */
+    /* ================= DATOS ================= */
 
+    /**
+     * Carga y muestra el total de videojuegos
+     * DEL USUARIO AUTENTICADO.
+     */
     private void cargarTotalJuegos() {
         lblTotalNumero.setText(
                 String.valueOf(controller.obtenerTotalJuegos())
         );
     }
 
-    /* ===== EDITAR NOMBRE ===== */
+    /* ================= EDITAR NOMBRE ================= */
 
     private void editarNombre() {
 
@@ -217,7 +251,18 @@ public class PerfilVista extends JFrame {
         String nuevoNombre = txtNombre.getText().trim();
         if (nuevoNombre.isEmpty() || nuevoNombre.equals(usuario.getNombre())) return;
 
+        int confirmar = JOptionPane.showConfirmDialog(
+                this,
+                "¿Seguro que quieres cambiar tu nombre de \"" +
+                        usuario.getNombre() + "\" a \"" + nuevoNombre + "\"?",
+                texts.getString("profile.edit.confirm.title"),
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirmar != JOptionPane.YES_OPTION) return;
+
         controller.actualizarNombre(nuevoNombre);
+        usuario.setNombre(nuevoNombre);
         lblNombreValor.setText(nuevoNombre);
 
         JOptionPane.showMessageDialog(
@@ -228,7 +273,7 @@ public class PerfilVista extends JFrame {
         );
     }
 
-    /* ===== CAMBIAR PASSWORD ===== */
+    /* ================= CAMBIAR CONTRASEÑA ================= */
 
     private void cambiarContrasena() {
 
@@ -246,6 +291,15 @@ public class PerfilVista extends JFrame {
         String nuevaPassword = new String(txtPassword.getPassword()).trim();
         if (nuevaPassword.isEmpty()) return;
 
+        int confirmar = JOptionPane.showConfirmDialog(
+                this,
+                texts.getString("profile.password.confirm"),
+                texts.getString("profile.password.confirm.title"),
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirmar != JOptionPane.YES_OPTION) return;
+
         controller.actualizarPassword(nuevaPassword);
 
         JOptionPane.showMessageDialog(
@@ -256,7 +310,7 @@ public class PerfilVista extends JFrame {
         );
     }
 
-    /* ===== BOTÓN MORADO ===== */
+    /* ================= BOTÓN MORADO ================= */
 
     private JButton crearBotonMorado(String texto, Dimension tamaño) {
 
@@ -290,4 +344,3 @@ public class PerfilVista extends JFrame {
         return boton;
     }
 }
-

@@ -13,20 +13,44 @@ import java.awt.event.FocusEvent;
 import java.util.ResourceBundle;
 
 /**
+ * Diálogo modal encargado de gestionar la recuperación de contraseña
+ * mediante el correo electrónico del usuario.
+ * <p>
+ * El usuario introduce su email y, si es válido y existe en la base de datos,
+ * se genera una nueva contraseña que se envía por correo electrónico.
+ * </p>
+ *
+ * La lógica de negocio se delega en {@link RecuperarContraseniaController},
+ * manteniendo la separación de responsabilidades según el patrón MVC.
  *
  * @author Raquel
+ * @version 1.0
  */
 public class RecuperarContraseniaDialog extends JDialog {
 
+    /** Campo de texto para introducir el email */
     private JTextField txtEmail;
+
+    /** Botón para iniciar la recuperación de contraseña */
     private JButton btnRecuperar;
+
+    /** Botón para cancelar y cerrar el diálogo */
     private JButton btnCancelar;
 
+    /** Controlador asociado al proceso de recuperación */
     private RecuperarContraseniaController controller;
+
+    /** Indica si ya se ha generado una contraseña para evitar duplicados */
     private boolean passwordGenerada = false;
 
+    /** Recursos de internacionalización */
     private ResourceBundle texts;
 
+    /**
+     * Constructor del diálogo de recuperación de contraseña.
+     *
+     * @param parent ventana padre desde la que se abre el diálogo
+     */
     public RecuperarContraseniaDialog(JFrame parent) {
         super(parent, true);
 
@@ -41,6 +65,9 @@ public class RecuperarContraseniaDialog extends JDialog {
         initComponents();
     }
 
+    /**
+     * Inicializa y organiza los componentes gráficos del diálogo.
+     */
     private void initComponents() {
 
         JPanel panel = new JPanel(new GridBagLayout());
@@ -51,7 +78,7 @@ public class RecuperarContraseniaDialog extends JDialog {
         gbc.insets = new Insets(8, 8, 8, 8);
         gbc.anchor = GridBagConstraints.WEST;
 
-        /* ---------- TÍTULO ---------- */
+        /* ================= TÍTULO ================= */
         JLabel lblTitulo = new JLabel(texts.getString("recover.title"));
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 16));
 
@@ -64,7 +91,7 @@ public class RecuperarContraseniaDialog extends JDialog {
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.WEST;
 
-        /* ---------- EMAIL ---------- */
+        /* ================= EMAIL ================= */
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.anchor = GridBagConstraints.EAST;
@@ -74,6 +101,7 @@ public class RecuperarContraseniaDialog extends JDialog {
         txtEmail.setPreferredSize(new Dimension(220, 26));
         txtEmail.setForeground(Color.GRAY);
 
+        /* Placeholder del email */
         txtEmail.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -96,7 +124,7 @@ public class RecuperarContraseniaDialog extends JDialog {
         gbc.anchor = GridBagConstraints.WEST;
         panel.add(txtEmail, gbc);
 
-        /* ---------- BOTÓN RECUPERAR ---------- */
+        /* ================= BOTÓN RECUPERAR ================= */
         btnRecuperar = new JButton(texts.getString("recover.button"));
 
         gbc.gridy = 2;
@@ -105,20 +133,25 @@ public class RecuperarContraseniaDialog extends JDialog {
         gbc.anchor = GridBagConstraints.CENTER;
         panel.add(btnRecuperar, gbc);
 
-        /* ---------- BOTÓN CANCELAR ---------- */
+        /* ================= BOTÓN CANCELAR ================= */
         btnCancelar = new JButton(texts.getString("recover.cancel"));
 
         gbc.gridy = 3;
         gbc.insets = new Insets(15, 6, 6, 6);
         panel.add(btnCancelar, gbc);
 
-        /* ---------- ACCIONES ---------- */
+        /* ================= ACCIONES ================= */
         btnCancelar.addActionListener(e -> dispose());
         btnRecuperar.addActionListener(e -> recuperarPassword());
     }
 
+    /**
+     * Valida el email introducido y delega en el controlador
+     * la generación y envío de la nueva contraseña.
+     */
     private void recuperarPassword() {
 
+        /* Evita generar varias contraseñas */
         if (passwordGenerada) {
             return;
         }
@@ -136,7 +169,7 @@ public class RecuperarContraseniaDialog extends JDialog {
             return;
         }
 
-        /* Email válido */
+        /* Formato de email no válido */
         if (!Pattern.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$", email)) {
             JOptionPane.showMessageDialog(
                     this,
@@ -147,7 +180,7 @@ public class RecuperarContraseniaDialog extends JDialog {
             return;
         }
 
-        /* delegar lógica al controlador */
+        /* Delegar la lógica al controlador */
         boolean ok = controller.recuperarPassword(email);
 
         if (!ok) {
@@ -160,6 +193,7 @@ public class RecuperarContraseniaDialog extends JDialog {
             return;
         }
 
+        /* Mensaje de éxito */
         JOptionPane.showMessageDialog(
                 this,
                 texts.getString("recover.success.message"),
@@ -171,4 +205,3 @@ public class RecuperarContraseniaDialog extends JDialog {
         dispose();
     }
 }
-

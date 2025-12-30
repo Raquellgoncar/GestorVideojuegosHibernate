@@ -16,23 +16,49 @@ import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.ResourceBundle;
 
+
 /**
+ * Vista para la eliminación de videojuegos.
+ * <p>
+ * Muestra un listado de los videojuegos del usuario en una tabla,
+ * permite buscarlos por título y eliminar el videojuego seleccionado,
+ * solicitando confirmación previa al usuario.
+ * </p>
+ *
+ * Sigue el patrón MVC, delegando la lógica de eliminación en
+ * {@link EliminarVideojuegoController}.
  *
  * @author Raquel
+ * @version 1.0
  */
 public class EliminarVideojuegoVista extends JFrame {
 
+    /** Usuario autenticado */
     private Usuario usuario;
 
+    /** Tabla que muestra los videojuegos */
     private JTable tabla;
+
+    /** Modelo de la tabla */
     private DefaultTableModel modelo;
+
+    /** Campo de búsqueda */
     private JTextField txtBuscar;
+
+    /** Botones de la vista */
     private JButton btnBuscar, btnEliminar, btnAtras;
 
+    /** Recursos de internacionalización */
     private ResourceBundle texts;
 
+    /** Controlador asociado a la vista */
     private EliminarVideojuegoController controller;
 
+    /**
+     * Constructor de la vista de eliminación de videojuegos.
+     *
+     * @param usuario usuario autenticado
+     */
     public EliminarVideojuegoVista(Usuario usuario) {
         this.usuario = usuario;
 
@@ -50,6 +76,9 @@ public class EliminarVideojuegoVista extends JFrame {
         cargarVideojuegos();
     }
 
+    /**
+     * Inicializa y organiza los componentes gráficos de la ventana.
+     */
     private void initComponents() {
 
         setLayout(new BorderLayout(10, 10));
@@ -150,12 +179,12 @@ public class EliminarVideojuegoVista extends JFrame {
 
         btnBuscar.addActionListener(e -> buscarVideojuegos());
 
-        SwingUtilities.invokeLater(() -> {
-            requestFocusInWindow();
-        });
+        SwingUtilities.invokeLater(() -> requestFocusInWindow());
     }
 
-    /* ================= CARGAR ================= */
+    /**
+     * Carga en la tabla los videojuegos del usuario.
+     */
     private void cargarVideojuegos() {
 
         modelo.setRowCount(0);
@@ -181,7 +210,9 @@ public class EliminarVideojuegoVista extends JFrame {
         }
     }
 
-    /* ================= BUSCAR ================= */
+    /**
+     * Filtra los videojuegos mostrados en la tabla según el texto introducido.
+     */
     private void buscarVideojuegos() {
 
         String texto = txtBuscar.getText().trim().toLowerCase();
@@ -213,7 +244,9 @@ public class EliminarVideojuegoVista extends JFrame {
         }
     }
 
-    /* ================= ELIMINAR ================= */
+    /**
+     * Elimina el videojuego seleccionado tras confirmar la acción.
+     */
     private void eliminarSeleccionado() {
 
         int fila = tabla.getSelectedRow();
@@ -269,7 +302,14 @@ public class EliminarVideojuegoVista extends JFrame {
         }
     }
 
-    /* ================= BOTÓN MORADO ================= */
+    /**
+     * Crea un botón con estilo morado personalizado.
+     *
+     * @param texto texto del botón
+     * @param tamaño tamaño del botón
+     * @param action acción a ejecutar
+     * @return botón configurado
+     */
     private JButton crearBotonMorado(
             String texto,
             Dimension tamaño,
@@ -311,7 +351,12 @@ public class EliminarVideojuegoVista extends JFrame {
         return boton;
     }
 
-    /* ================= PLACEHOLDER ================= */
+    /**
+     * Aplica un comportamiento de placeholder a un campo de texto.
+     *
+     * @param campo campo de texto
+     * @param texto texto del placeholder
+     */
     private void ponerPlaceholder(JTextField campo, String texto) {
 
         campo.setText(texto);

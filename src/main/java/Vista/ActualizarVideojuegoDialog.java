@@ -19,24 +19,54 @@ import java.util.Date;
 import java.util.ResourceBundle;
 
 /**
+ * Diálogo para la actualización de un videojuego existente.
+ * <p>
+ * Permite modificar los datos de un videojuego (título, plataforma,
+ * año y valoración) y gestionar si está marcado como favorito.
+ * Los cambios se guardan en la base de datos utilizando los DAO
+ * correspondientes.
+ * </p>
  *
  * @author Raquel
+ * @version 1.0
  */
 public class ActualizarVideojuegoDialog extends JDialog {
 
+    /** Campos de texto del formulario */
     private JTextField txtTitulo, txtPlataforma, txtAnio, txtValoracion;
+
+    /** Botón para marcar o desmarcar el videojuego como favorito */
     private JToggleButton btnFavorito;
+
+    /** Botones de acción del diálogo */
     private JButton btnAceptar, btnCancelar;
 
+    /** Usuario autenticado */
     private Usuario usuario;
+
+    /** Videojuego que se va a actualizar */
     private Videojuego videojuego;
+
+    /** Indica si el videojuego era favorito antes de la modificación */
     private boolean eraFavorito;
 
+    /** DAO para la gestión de videojuegos */
     private VideojuegoDAO videojuegoDAO = new VideojuegoDAO_imp();
+
+    /** DAO para la gestión de favoritos */
     private FavoritoDAO favoritoDAO = new FavoritoDAO_imp();
 
+    /** Recursos de internacionalización */
     private ResourceBundle texts;
 
+    /**
+     * Constructor del diálogo de actualización de videojuegos.
+     *
+     * @param parent ventana padre
+     * @param usuario usuario autenticado
+     * @param videojuego videojuego a modificar
+     * @param esFavorito indica si el videojuego estaba marcado como favorito
+     */
     public ActualizarVideojuegoDialog(
             JFrame parent,
             Usuario usuario,
@@ -59,6 +89,9 @@ public class ActualizarVideojuegoDialog extends JDialog {
         cargarDatos();
     }
 
+    /**
+     * Inicializa y organiza los componentes gráficos del diálogo.
+     */
     private void initComponents() {
 
         setLayout(new BorderLayout());
@@ -182,7 +215,7 @@ public class ActualizarVideojuegoDialog extends JDialog {
         );
 
         getRootPane().setDefaultButton(btnAceptar);
-        
+
         panelInferior.add(btnCancelar, BorderLayout.WEST);
         panelInferior.add(btnAceptar, BorderLayout.EAST);
 
@@ -191,6 +224,11 @@ public class ActualizarVideojuegoDialog extends JDialog {
         SwingUtilities.invokeLater(() -> requestFocusInWindow());
     }
 
+    /**
+     * Crea un campo de texto con el estilo visual común de la aplicación.
+     *
+     * @return campo de texto configurado
+     */
     private JTextField crearCampoTexto() {
         JTextField campo = new JTextField();
         campo.setFont(new Font("Segoe UI", Font.PLAIN, 15));
@@ -198,6 +236,12 @@ public class ActualizarVideojuegoDialog extends JDialog {
         return campo;
     }
 
+    /**
+     * Activa un comportamiento de placeholder editable en un campo de texto.
+     *
+     * @param campo campo de texto
+     * @param valorInicial valor inicial que actúa como placeholder
+     */
     private void activarPlaceholderEditable(JTextField campo, String valorInicial) {
 
         campo.setText(valorInicial);
@@ -221,6 +265,9 @@ public class ActualizarVideojuegoDialog extends JDialog {
         });
     }
 
+    /**
+     * Carga los datos actuales del videojuego en el formulario.
+     */
     private void cargarDatos() {
 
         activarPlaceholderEditable(txtTitulo, videojuego.getTitulo());
@@ -234,6 +281,14 @@ public class ActualizarVideojuegoDialog extends JDialog {
         btnFavorito.setSelected(eraFavorito);
     }
 
+    /**
+     * Crea un botón con estilo morado personalizado.
+     *
+     * @param texto texto del botón
+     * @param tamaño tamaño del botón
+     * @param action acción a ejecutar al pulsar
+     * @return botón configurado
+     */
     private JButton crearBotonMorado(
             String texto,
             Dimension tamaño,
@@ -274,6 +329,13 @@ public class ActualizarVideojuegoDialog extends JDialog {
         return boton;
     }
 
+    /**
+     * Valida los datos introducidos y actualiza el videojuego.
+     * <p>
+     * También gestiona la inserción o eliminación del videojuego
+     * en favoritos según el estado del botón correspondiente.
+     * </p>
+     */
     private void validarYActualizar() {
 
         if (txtTitulo.getText().trim().isEmpty()
@@ -340,10 +402,17 @@ public class ActualizarVideojuegoDialog extends JDialog {
         }
     }
 
+    /**
+     * Carga y escala un icono desde los recursos del proyecto.
+     *
+     * @param ruta ruta del icono
+     * @param ancho ancho deseado
+     * @param alto alto deseado
+     * @return icono escalado
+     */
     private ImageIcon cargarIconoEscalado(String ruta, int ancho, int alto) {
         ImageIcon icono = new ImageIcon(getClass().getResource(ruta));
         Image img = icono.getImage().getScaledInstance(ancho, alto, Image.SCALE_SMOOTH);
         return new ImageIcon(img);
     }
 }
-

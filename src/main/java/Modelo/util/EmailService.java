@@ -10,14 +10,39 @@ import jakarta.mail.internet.MimeMessage;
 import java.util.Properties;
 
 /**
+ * Servicio encargado del envío de correos electrónicos.
+ * <p>
+ * Esta clase se utiliza para enviar emails relacionados con la
+ * recuperación de contraseña, enviando al usuario una nueva
+ * contraseña generada previamente.
+ * </p>
  *
  * @author Raquel
+ * @version 1.0
  */
 public class EmailService {
 
+    /**
+     * Dirección de correo desde la que se envían los mensajes.
+     */
     private static final String EMAIL_FROM = "correopruebaraquel@gmail.com";
+
+    /**
+     * Contraseña de la cuenta de correo emisora.
+     */
     private static final String PASSWORD = "zauvsbhpeqkjfyzs";
 
+    /**
+     * Envía un correo electrónico con una nueva contraseña al usuario.
+     * <p>
+     * Configura una sesión SMTP utilizando Gmail y envía un mensaje
+     * con la nueva contraseña generada. Se recomienda al usuario
+     * cambiarla tras iniciar sesión.
+     * </p>
+     *
+     * @param emailDestino dirección de correo del destinatario
+     * @param nuevaPassword nueva contraseña generada
+     */
     public static void enviarNuevaPassword(String emailDestino, String nuevaPassword) {
 
         Properties props = new Properties();
@@ -28,6 +53,7 @@ public class EmailService {
 
         Session session = Session.getInstance(props,
                 new Authenticator() {
+            @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(EMAIL_FROM, PASSWORD);
             }

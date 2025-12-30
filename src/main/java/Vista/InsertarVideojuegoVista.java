@@ -20,20 +20,45 @@ import java.util.Date;
 import java.util.ResourceBundle;
 
 /**
+ * Vista para la inserción de nuevos videojuegos.
+ * <p>
+ * Permite al usuario introducir los datos de un videojuego
+ * (título, plataforma, año, valoración) y marcarlo opcionalmente
+ * como favorito. Incluye validaciones básicas antes de delegar
+ * la inserción al controlador.
+ * </p>
+ *
+ * Sigue el patrón MVC, delegando la lógica de negocio en
+ * {@link InsertarVideojuegoController}.
  *
  * @author Raquel
+ * @version 1.0
  */
 public class InsertarVideojuegoVista extends JFrame {
 
+    /** Campos de texto para los datos del videojuego */
     private JTextField txtTitulo, txtPlataforma, txtAnio, txtValoracion;
+
+    /** Botón para marcar el videojuego como favorito */
     private JToggleButton btnFavorito;
+
+    /** Botones de acción */
     private JButton btnAceptar, btnCancelar;
 
+    /** Usuario autenticado */
     private Usuario usuario;
+
+    /** Recursos de internacionalización */
     private ResourceBundle texts;
 
+    /** Controlador asociado a la vista */
     private InsertarVideojuegoController controller;
 
+    /**
+     * Constructor de la vista de inserción de videojuegos.
+     *
+     * @param usuario usuario autenticado
+     */
     public InsertarVideojuegoVista(Usuario usuario) {
         this.usuario = usuario;
 
@@ -51,6 +76,9 @@ public class InsertarVideojuegoVista extends JFrame {
         initComponents();
     }
 
+    /**
+     * Inicializa y organiza los componentes gráficos de la ventana.
+     */
     private void initComponents() {
 
         setLayout(new BorderLayout());
@@ -172,6 +200,11 @@ public class InsertarVideojuegoVista extends JFrame {
         add(panelInferior, BorderLayout.SOUTH);
     }
 
+    /**
+     * Crea un campo de texto con el estilo común de la aplicación.
+     *
+     * @return campo de texto configurado
+     */
     private JTextField crearCampoTexto() {
         JTextField campo = new JTextField();
         campo.setFont(new Font("Segoe UI", Font.PLAIN, 15));
@@ -179,6 +212,14 @@ public class InsertarVideojuegoVista extends JFrame {
         return campo;
     }
 
+    /**
+     * Crea un botón con estilo morado personalizado.
+     *
+     * @param texto texto del botón
+     * @param tamaño tamaño del botón
+     * @param action acción a ejecutar
+     * @return botón configurado
+     */
     private JButton crearBotonMorado(
             String texto,
             Dimension tamaño,
@@ -220,7 +261,10 @@ public class InsertarVideojuegoVista extends JFrame {
         return boton;
     }
 
-    /* ================= VALIDACIONES ================= */
+    /**
+     * Valida los datos introducidos y solicita al controlador
+     * la inserción del videojuego.
+     */
     private void validarYProcesar() {
 
         if (txtTitulo.getText().trim().isEmpty()
@@ -284,6 +328,14 @@ public class InsertarVideojuegoVista extends JFrame {
         }
     }
 
+    /**
+     * Carga y escala un icono desde los recursos del proyecto.
+     *
+     * @param ruta ruta del recurso
+     * @param ancho ancho deseado
+     * @param alto alto deseado
+     * @return icono escalado
+     */
     private ImageIcon cargarIconoEscalado(String ruta, int ancho, int alto) {
         ImageIcon icono = new ImageIcon(getClass().getResource(ruta));
         Image img = icono.getImage().getScaledInstance(ancho, alto, Image.SCALE_SMOOTH);

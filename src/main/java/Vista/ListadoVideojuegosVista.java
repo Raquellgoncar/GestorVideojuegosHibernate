@@ -15,22 +15,48 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 /**
+ * Vista de listado de videojuegos del usuario.
+ * <p>
+ * Muestra en una tabla todos los videojuegos asociados al usuario
+ * autenticado, junto con información básica como plataforma, año
+ * y valoración. Incluye un fondo personalizado y un contador del
+ * total de videojuegos registrados.
+ * </p>
+ *
+ * Sigue el patrón MVC, delegando la obtención de datos y la navegación
+ * en {@link ListadoVideojuegosController}.
  *
  * @author Raquel
+ * @version 1.0
  */
 public class ListadoVideojuegosVista extends JFrame {
 
+    /** Usuario autenticado */
     private Usuario usuario;
+
+    /** Tabla de videojuegos */
     private JTable tabla;
+
+    /** Modelo de datos de la tabla */
     private DefaultTableModel modelo;
 
+    /** Imagen de fondo de la vista */
     private Image imagenFondo;
+
+    /** Recursos de internacionalización */
     private ResourceBundle texts;
 
+    /** Etiqueta que muestra el total de videojuegos */
     private JLabel lblTotal;
 
+    /** Controlador asociado a la vista */
     private ListadoVideojuegosController controller;
 
+    /**
+     * Constructor de la vista de listado de videojuegos.
+     *
+     * @param usuario usuario autenticado
+     */
     public ListadoVideojuegosVista(Usuario usuario) {
         this.usuario = usuario;
 
@@ -53,6 +79,9 @@ public class ListadoVideojuegosVista extends JFrame {
         cargarVideojuegos();
     }
 
+    /**
+     * Inicializa y organiza los componentes gráficos de la ventana.
+     */
     private void initComponents() {
 
         /* ===== PANEL ROOT CON FONDO ===== */
@@ -148,7 +177,11 @@ public class ListadoVideojuegosVista extends JFrame {
         root.add(panelSur, BorderLayout.SOUTH);
     }
 
-    /* ===== BOTÓN ATRÁS ===== */
+    /**
+     * Crea el botón personalizado para volver al menú principal.
+     *
+     * @return botón configurado
+     */
     private JButton crearBotonMoradoAtras() {
 
         JButton boton = new JButton(texts.getString("common.back")) {
@@ -187,7 +220,10 @@ public class ListadoVideojuegosVista extends JFrame {
         return boton;
     }
 
-    /* ===== CARGAR VIDEOJUEGOS ===== */
+    /**
+     * Carga los videojuegos del usuario en la tabla y
+     * actualiza el contador total.
+     */
     private void cargarVideojuegos() {
 
         modelo.setRowCount(0);

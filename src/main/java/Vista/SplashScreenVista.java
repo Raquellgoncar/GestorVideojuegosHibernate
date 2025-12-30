@@ -18,14 +18,29 @@ import javax.swing.JWindow;
 import javax.swing.Timer;
 
 /**
+ * Pantalla de presentación (splash screen) de la aplicación.
+ * <p>
+ * Se muestra brevemente tras un inicio de sesión correcto y actúa como
+ * transición visual antes de acceder al menú principal. No contiene lógica
+ * de negocio ni interacción del usuario.
+ * </p>
  *
  * @author Raquel
+ * @version 1.0
  */
 public class SplashScreenVista extends JWindow {
 
+    /** Imagen de fondo mostrada en la pantalla de carga */
     private Image fondo;
+
+    /** Usuario autenticado que será pasado al menú principal */
     private Usuario usuario;
 
+    /**
+     * Constructor de la pantalla de carga.
+     *
+     * @param usuario usuario autenticado tras el login
+     */
     public SplashScreenVista(Usuario usuario) {
         this.usuario = usuario;
 
@@ -37,15 +52,18 @@ public class SplashScreenVista extends JWindow {
         setSize(700, 500);
         setLocationRelativeTo(null);
 
+        /* Panel principal encargado del dibujado del fondo y del texto */
         JPanel panel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
 
+                /* Dibujo del fondo */
                 if (fondo != null) {
                     g.drawImage(fondo, 0, 0, getWidth(), getHeight(), this);
                 }
 
+                /* Configuración de renderizado de texto */
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(
                         RenderingHints.KEY_TEXT_ANTIALIASING,
@@ -66,6 +84,7 @@ public class SplashScreenVista extends JWindow {
 
         setContentPane(panel);
 
+        /* Temporizador que muestra la splash durante 2,5 segundos */
         Timer timer = new Timer(2500, e -> {
             new MenuPrincipalVista(usuario).setVisible(true);
             dispose();

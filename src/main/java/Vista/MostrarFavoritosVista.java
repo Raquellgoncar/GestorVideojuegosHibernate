@@ -16,20 +16,46 @@ import java.util.List;
 import javax.swing.table.JTableHeader;
 import java.util.ResourceBundle;
 import javax.swing.table.DefaultTableCellRenderer;
+
 /**
+ * Vista encargada de mostrar los videojuegos marcados como favoritos
+ * por el usuario autenticado.
+ * <p>
+ * Permite visualizar los datos básicos de cada videojuego favorito
+ * y ofrece la opción de eliminar un videojuego de la lista de favoritos.
+ * </p>
+ *
+ * La lógica de negocio se delega en {@link MostrarFavoritosController},
+ * siguiendo el patrón MVC.
  *
  * @author Raquel
+ * @version 1.0
  */
 public class MostrarFavoritosVista extends JFrame {
 
+    /** Usuario autenticado */
     private Usuario usuario;
+
+    /** Tabla de favoritos */
     private JTable tabla;
+
+    /** Modelo de la tabla */
     private DefaultTableModel modelo;
+
+    /** Lista de favoritos del usuario */
     private List<Favorito> listaFavoritos;
 
+    /** Recursos de internacionalización */
     private ResourceBundle texts;
+
+    /** Controlador asociado a la vista */
     private MostrarFavoritosController controller;
 
+    /**
+     * Constructor de la vista de favoritos.
+     *
+     * @param usuario usuario autenticado
+     */
     public MostrarFavoritosVista(Usuario usuario) {
         this.usuario = usuario;
         this.texts = ResourceBundle.getBundle("i18n.messages");
@@ -46,6 +72,9 @@ public class MostrarFavoritosVista extends JFrame {
         cargarFavoritos();
     }
 
+    /**
+     * Inicializa los componentes gráficos de la ventana.
+     */
     private void initComponents() {
 
         JPanel root = new JPanel(new BorderLayout(10, 10)) {
@@ -63,6 +92,7 @@ public class MostrarFavoritosVista extends JFrame {
 
         setContentPane(root);
 
+        /* ================= TÍTULO ================= */
         JLabel lblTitulo = new JLabel(
                 texts.getString("favorites.title"),
                 SwingConstants.CENTER
@@ -72,6 +102,7 @@ public class MostrarFavoritosVista extends JFrame {
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         root.add(lblTitulo, BorderLayout.NORTH);
 
+        /* ================= TABLA ================= */
         modelo = new DefaultTableModel(
                 new Object[]{
                     texts.getString("favorites.table.title"),
@@ -98,18 +129,18 @@ public class MostrarFavoritosVista extends JFrame {
         header.setReorderingAllowed(false);
         header.setOpaque(false);
 
-        // ===== CENTRADO DE AÑO Y VALORACIÓN (IGUAL QUE LA CLASE ANTIGUA) =====
+        /* ===== CENTRADO DE AÑO Y VALORACIÓN ===== */
         DefaultTableCellRenderer centrado = new DefaultTableCellRenderer();
         centrado.setHorizontalAlignment(SwingConstants.CENTER);
-        tabla.getColumnModel().getColumn(2).setCellRenderer(centrado); // Año
-        tabla.getColumnModel().getColumn(3).setCellRenderer(centrado); // Valoración
-        // ==================================================================
+        tabla.getColumnModel().getColumn(2).setCellRenderer(centrado);
+        tabla.getColumnModel().getColumn(3).setCellRenderer(centrado);
 
         JScrollPane scroll = new JScrollPane(tabla);
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);
         root.add(scroll, BorderLayout.CENTER);
 
+        /* ================= PANEL INFERIOR ================= */
         JPanel panelSur = new JPanel(new BorderLayout());
         panelSur.setOpaque(false);
 
@@ -139,13 +170,19 @@ public class MostrarFavoritosVista extends JFrame {
         root.add(panelSur, BorderLayout.SOUTH);
     }
 
-    /* ===== CARGAR FAVORITOS ===== */
+    /**
+     * Carga los videojuegos favoritos del usuario en la tabla.
+     * Este método puede ser llamado desde el controlador tras
+     * modificar la lista de favoritos.
+     */
     public void cargarFavoritos() {
 
         listaFavoritos = controller.obtenerFavoritos();
         modelo.setRowCount(0);
 
-        if (listaFavoritos == null || listaFavoritos.isEmpty()) return;
+        if (listaFavoritos == null || listaFavoritos.isEmpty()) {
+            return;
+        }
 
         for (Favorito f : listaFavoritos) {
             Videojuego v = f.getVideojuegoId();
@@ -158,7 +195,10 @@ public class MostrarFavoritosVista extends JFrame {
         }
     }
 
-    /* ===== QUITAR FAVORITO ===== */
+    /**
+     * Elimina el videojuego seleccionado de la lista de favoritos
+     * tras solicitar confirmación al usuario.
+     */
     private void quitarFavorito() {
 
         int fila = tabla.getSelectedRow();
@@ -185,7 +225,15 @@ public class MostrarFavoritosVista extends JFrame {
         }
     }
 
-    /* ===== BOTÓN MORADO ===== */
+    /**
+     * Crea un botón con estilo morado degradado utilizado
+     * en la vista de favoritos.
+     *
+     * @param texto texto del botón
+     * @param tamaño tamaño del botón
+     * @param action acción asociada al botón
+     * @return botón configurado
+     */
     private JButton crearBotonMorado(
             String texto,
             Dimension tamaño,
@@ -227,4 +275,3 @@ public class MostrarFavoritosVista extends JFrame {
         return boton;
     }
 }
-

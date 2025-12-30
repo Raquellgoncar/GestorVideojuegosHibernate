@@ -13,23 +13,48 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.*;
 import java.util.ResourceBundle;
 
-
 /**
+ * Vista del menú principal de la aplicación.
+ * <p>
+ * Desde esta ventana el usuario puede acceder a las principales
+ * funcionalidades del sistema: visualizar videojuegos, modificarlos,
+ * consultar favoritos, acceder a su perfil o cerrar sesión.
+ * </p>
+ *
+ * La vista utiliza efectos visuales como fondo animado y adaptación
+ * dinámica del tamaño de los componentes según la resolución.
+ * Sigue el patrón MVC delegando la navegación en {@link MenuPrincipalController}.
  *
  * @author Raquel
- */public class MenuPrincipalVista extends JFrame {
+ * @version 1.0
+ */
+public class MenuPrincipalVista extends JFrame {
 
+    /** Botones principales del menú */
     private JButton btnMostrar, btnModificar, btnFavoritos, btnPerfil, btnAtras;
+
+    /** Título del menú */
     private JLabel lblTitulo;
+
+    /** Usuario autenticado */
     private Usuario usuario;
 
+    /** Imágenes de fondo */
     private Image imagenFondo;
     private Image fondoNormal;
     private ImageIcon fondoGif;
 
+    /** Recursos de internacionalización */
     private ResourceBundle texts;
+
+    /** Controlador asociado a la vista */
     private MenuPrincipalController controller;
 
+    /**
+     * Constructor del menú principal.
+     *
+     * @param usuario usuario autenticado
+     */
     public MenuPrincipalVista(Usuario usuario) {
         this.usuario = usuario;
 
@@ -67,6 +92,9 @@ import java.util.ResourceBundle;
         });
     }
 
+    /**
+     * Inicializa y organiza los componentes gráficos del menú.
+     */
     private void initComponents() {
 
         JPanel root = new JPanel(new GridBagLayout()) {
@@ -147,6 +175,10 @@ import java.util.ResourceBundle;
         adaptarTamano();
     }
 
+    /**
+     * Ajusta dinámicamente el tamaño de fuentes, botones y márgenes
+     * según el tamaño actual de la ventana.
+     */
     private void adaptarTamano() {
 
         int ancho = getWidth();
@@ -205,6 +237,13 @@ import java.util.ResourceBundle;
         repaint();
     }
 
+    /**
+     * Crea un botón principal del menú con estilo personalizado
+     * y efecto de cambio de fondo al pasar el ratón.
+     *
+     * @param texto texto del botón
+     * @return botón configurado
+     */
     private JButton crearBoton(String texto) {
 
         JButton boton = new JButton(texto) {
@@ -253,3 +292,4 @@ import java.util.ResourceBundle;
         return boton;
     }
 }
+

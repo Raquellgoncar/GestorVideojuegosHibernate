@@ -13,24 +13,48 @@ import java.awt.event.ComponentEvent;
 import java.util.ResourceBundle;
 
 /**
+ * Vista que permite al usuario acceder a las opciones de modificación
+ * de videojuegos: insertar, actualizar o eliminar.
+ * <p>
+ * Esta pantalla actúa como menú intermedio dentro del flujo de gestión
+ * de videojuegos y delega las acciones en {@link ModificarVideojuegosController}.
+ * </p>
+ *
+ * Incluye efectos visuales como cambio dinámico de fondo al pasar el ratón
+ * por los botones y adaptación automática del tamaño según la ventana.
  *
  * @author Raquel
+ * @version 1.0
  */
 public class ModificarVideojuegosVista extends JFrame {
 
+    /** Usuario autenticado */
     private Usuario usuario;
 
+    /** Botones de acciones */
     private JButton btnInsertar, btnActualizar, btnEliminar, btnAtras;
+
+    /** Título de la ventana */
     private JLabel lblTitulo;
 
+    /** Imágenes de fondo */
     private Image imagenFondo;
     private Image fondoOriginal, fondoInsertar, fondoActualizar, fondoEliminar;
 
+    /** Separadores dinámicos entre botones */
     private Box.Filler sep1, sep2;
 
+    /** Recursos de internacionalización */
     private ResourceBundle texts;
+
+    /** Controlador asociado a la vista */
     private ModificarVideojuegosController controller;
 
+    /**
+     * Constructor de la vista de modificación de videojuegos.
+     *
+     * @param usuario usuario autenticado
+     */
     public ModificarVideojuegosVista(Usuario usuario) {
         this.usuario = usuario;
 
@@ -45,7 +69,7 @@ public class ModificarVideojuegosVista extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(true);
 
-        // ===== CARGA DE IMÁGENES =====
+        /* ===== CARGA DE IMÁGENES ===== */
         fondoOriginal = new ImageIcon(getClass().getResource("/img/fondomodificar.png")).getImage();
         fondoInsertar = new ImageIcon(getClass().getResource("/img/insertar.png")).getImage();
         fondoActualizar = new ImageIcon(getClass().getResource("/img/actualizar.jpg")).getImage();
@@ -63,6 +87,9 @@ public class ModificarVideojuegosVista extends JFrame {
         });
     }
 
+    /**
+     * Inicializa y organiza los componentes gráficos de la ventana.
+     */
     private void initComponents() {
 
         JPanel root = new JPanel(new GridBagLayout()) {
@@ -120,7 +147,7 @@ public class ModificarVideojuegosVista extends JFrame {
         gbc.insets = new Insets(90, 0, 0, 0);
         root.add(panelCentral, gbc);
 
-        // ===== ACCIONES =====
+        /* ================= ACCIONES ================= */
         btnInsertar.addActionListener(e -> controller.insertar());
         btnActualizar.addActionListener(e -> controller.actualizar());
         btnEliminar.addActionListener(e -> controller.eliminar());
@@ -179,7 +206,10 @@ public class ModificarVideojuegosVista extends JFrame {
         adaptarTamano();
     }
 
-    /* ================= ESCALADO ================= */
+    /**
+     * Ajusta dinámicamente tamaños de fuentes, botones y separaciones
+     * según el ancho actual de la ventana.
+     */
     private void adaptarTamano() {
 
         float escala = Math.max(1f, getWidth() / 800f);
@@ -228,7 +258,13 @@ public class ModificarVideojuegosVista extends JFrame {
         repaint();
     }
 
-    /* ================= BOTÓN MORADO ================= */
+    /**
+     * Crea un botón con estilo morado degradado utilizado
+     * en el menú de modificación.
+     *
+     * @param texto texto del botón
+     * @return botón configurado
+     */
     private JButton crearBoton(String texto) {
 
         JButton boton = new JButton(texto) {
@@ -260,3 +296,4 @@ public class ModificarVideojuegosVista extends JFrame {
         return boton;
     }
 }
+

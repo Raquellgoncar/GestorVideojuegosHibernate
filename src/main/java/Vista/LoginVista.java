@@ -14,21 +14,44 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
+ * Vista principal de inicio de sesión de la aplicación.
+ * <p>
+ * Permite al usuario autenticarse mediante nombre de usuario y contraseña,
+ * acceder al registro de nuevos usuarios, recuperar la contraseña mediante
+ * correo electrónico y seleccionar el idioma de la aplicación.
+ * </p>
+ *
+ * Esta vista actúa como punto de entrada a la aplicación y delega la
+ * autenticación en {@link LoginController}, siguiendo el patrón MVC.
  *
  * @author Raquel
+ * @version 1.0
  */
 public class LoginVista extends JFrame {
 
+    /** Campo de texto para el nombre de usuario */
     private JTextField txtUsername;
+
+    /** Campo de texto para la contraseña */
     private JPasswordField txtPassword;
+
+    /** Botones principales de la vista */
     private JButton btnAcceder;
     private JButton btnRegistrar;
     private JButton btnRecuperar;
+
+    /** Imagen de fondo de la ventana */
     private Image imagenFondo;
 
+    /** Controlador encargado de la autenticación */
     private LoginController loginController;
+
+    /** Recursos de internacionalización */
     private ResourceBundle texts;
 
+    /**
+     * Constructor de la vista de login.
+     */
     public LoginVista() {
         setTitle("Checkpoint - Login");
         setSize(800, 600);
@@ -54,6 +77,9 @@ public class LoginVista extends JFrame {
         initComponents();
     }
 
+    /**
+     * Inicializa y organiza todos los componentes gráficos de la ventana.
+     */
     private void initComponents() {
 
         JPanel root = new JPanel(new GridBagLayout()) {
@@ -79,7 +105,7 @@ public class LoginVista extends JFrame {
         gbc.insets = new Insets(60, 0, 0, 0);
         root.add(panel, gbc);
 
-        //TITULO
+        /* ===== TÍTULO ===== */
         JLabel lblTitulo = new JLabel("CheckPoint", SwingConstants.CENTER);
         lblTitulo.setFont(new Font("Wide Latin", Font.PLAIN, 40));
         lblTitulo.setForeground(Color.WHITE);
@@ -90,7 +116,7 @@ public class LoginVista extends JFrame {
         panel.add(lblTitulo);
         panel.add(Box.createRigidArea(new Dimension(0, 30)));
 
-       
+        /* ===== USUARIO ===== */
         txtUsername = new JTextField();
         txtUsername.setMaximumSize(new Dimension(280, 32));
         addPlaceholder(txtUsername, texts.getString("login.username"));
@@ -99,7 +125,7 @@ public class LoginVista extends JFrame {
 
         panel.add(Box.createRigidArea(new Dimension(0, 18)));
 
-        
+        /* ===== CONTRASEÑA ===== */
         txtPassword = new JPasswordField();
         txtPassword.setMaximumSize(new Dimension(280, 32));
         addPasswordPlaceholder(txtPassword, texts.getString("login.password"));
@@ -114,7 +140,7 @@ public class LoginVista extends JFrame {
         lblOlvidado.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblOlvidado.setToolTipText("Pulsa para recuperar tu contraseña");
 
-        //BOTON RECUPERAR CONTRASEÑA
+        /* ===== RECUPERAR CONTRASEÑA ===== */
         btnRecuperar = crearBotonLilaSuave(texts.getString("login.recover"));
         btnRecuperar.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnRecuperar.setToolTipText("Recuperar contraseña mediante email");
@@ -129,7 +155,7 @@ public class LoginVista extends JFrame {
 
         panel.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        //BTOTON ACCEDER AS LA APLICASCION
+        /* ===== ACCEDER ===== */
         btnAcceder = crearBotonMorado(texts.getString("login.access"));
         btnAcceder.setFont(new Font("Segoe UI Black", Font.PLAIN, 20));
         btnAcceder.setMaximumSize(new Dimension(280, 40));
@@ -142,14 +168,13 @@ public class LoginVista extends JFrame {
 
         panel.add(Box.createRigidArea(new Dimension(0, 18)));
 
+        /* ===== REGISTRO ===== */
         JLabel lblRegistro = new JLabel(texts.getString("login.noaccount"));
         lblRegistro.setFont(new Font("Arial", Font.BOLD, 13));
         lblRegistro.setForeground(Color.WHITE);
         lblRegistro.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblRegistro.setToolTipText("Crear una nueva cuenta");
 
-        
-        //BOTON PARA REGISTRARSE
         btnRegistrar = crearBotonMorado(texts.getString("login.register"));
         btnRegistrar.setFont(new Font("Segoe UI Black", Font.PLAIN, 20));
         btnRegistrar.setMaximumSize(new Dimension(280, 40));
@@ -166,6 +191,7 @@ public class LoginVista extends JFrame {
 
         panel.add(Box.createRigidArea(new Dimension(0, 20)));
 
+        /* ===== IDIOMA ===== */
         JButton btnIdioma = crearBotonMorado(texts.getString("login.language"));
         btnIdioma.setFont(new Font("Segoe UI Black", Font.PLAIN, 14));
         btnIdioma.setMaximumSize(new Dimension(200, 34));
@@ -178,8 +204,9 @@ public class LoginVista extends JFrame {
         SwingUtilities.invokeLater(() -> root.requestFocusInWindow());
     }
 
-    
-    //LOGIN DE LA APLICACION
+    /**
+     * Realiza el proceso de autenticación del usuario.
+     */
     private void login() {
 
         String username = txtUsername.getText().trim();
@@ -206,8 +233,9 @@ public class LoginVista extends JFrame {
         new SplashScreenVista(usuario).setVisible(true);
     }
 
-    
-    //SELECCIONAR EL IDIOMA
+    /**
+     * Muestra un diálogo para seleccionar el idioma de la aplicación.
+     */
     private void seleccionarIdioma() {
 
         JDialog dialog = new JDialog(this, texts.getString("language.title"), true);
@@ -262,8 +290,12 @@ public class LoginVista extends JFrame {
         dialog.setVisible(true);
     }
 
-    
-    //PLACEHOLDER PARA PONER USER Y CONTRASEÑA
+    /**
+     * Añade un placeholder a un campo de texto.
+     *
+     * @param field campo de texto
+     * @param text texto del placeholder
+     */
     private void addPlaceholder(JTextField field, String text) {
         field.setText(text);
         field.setForeground(Color.GRAY);
@@ -287,6 +319,12 @@ public class LoginVista extends JFrame {
         });
     }
 
+    /**
+     * Añade un placeholder específico para campos de contraseña.
+     *
+     * @param field campo de contraseña
+     * @param text texto del placeholder
+     */
     private void addPasswordPlaceholder(JPasswordField field, String text) {
         field.setText(text);
         field.setForeground(Color.GRAY);
@@ -313,7 +351,12 @@ public class LoginVista extends JFrame {
         });
     }
 
-    //DISEÑO DE BOTONES
+    /**
+     * Crea un botón principal con estilo morado.
+     *
+     * @param texto texto del botón
+     * @return botón configurado
+     */
     private JButton crearBotonMorado(String texto) {
         JButton boton = new JButton(texto) {
             @Override
@@ -342,6 +385,12 @@ public class LoginVista extends JFrame {
         return boton;
     }
 
+    /**
+     * Crea un botón secundario con estilo lila suave.
+     *
+     * @param texto texto del botón
+     * @return botón configurado
+     */
     private JButton crearBotonLilaSuave(String texto) {
         JButton boton = new JButton(texto) {
             @Override
@@ -370,4 +419,3 @@ public class LoginVista extends JFrame {
         return boton;
     }
 }
-
