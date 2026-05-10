@@ -4,21 +4,18 @@
  */
 package Modelo;
 
-import java.io.Serializable; 
-import java.util.Collection; 
-import java.util.Date; 
-import javax.persistence.Basic; 
-import javax.persistence.CascadeType; 
-import javax.persistence.Column; 
-import javax.persistence.Entity; 
-import javax.persistence.GeneratedValue; 
-import javax.persistence.GenerationType; 
-import javax.persistence.Id; 
-import javax.persistence.NamedQueries; 
-import javax.persistence.NamedQuery; 
-import javax.persistence.OneToMany; 
-import javax.persistence.Table; 
-import javax.persistence.Temporal; 
+import java.io.Serializable;
+import java.util.Date;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
@@ -112,12 +109,6 @@ public class Usuario implements Serializable {
     private Date ultimaConexion;
 
     /**
-     * Colección de videojuegos marcados como favoritos por el usuario.
-     */
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "usuarioId")
-    private Collection<Favorito> favoritoCollection;
-
-    /**
      * Constructor vacío requerido por JPA.
      */
     public Usuario() {
@@ -135,10 +126,10 @@ public class Usuario implements Serializable {
     /**
      * Constructor que inicializa los datos principales del usuario.
      *
-     * @param id identificador del usuario
-     * @param username nombre de usuario
+     * @param id           identificador del usuario
+     * @param username     nombre de usuario
      * @param passwordHash contraseña cifrada mediante hash
-     * @param email correo electrónico del usuario
+     * @param email        correo electrónico del usuario
      */
     public Usuario(Integer id, String username, String passwordHash, String email) {
         this.id = id;
@@ -147,168 +138,37 @@ public class Usuario implements Serializable {
         this.email = email;
     }
 
-    /**
-     * Devuelve el identificador del usuario.
-     *
-     * @return id del usuario
-     */
-    public Integer getId() {
-        return id;
-    }
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
-    /**
-     * Establece el identificador del usuario.
-     *
-     * @param id nuevo identificador
-     */
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 
-    /**
-     * Devuelve el nombre de usuario.
-     *
-     * @return nombre de usuario
-     */
-    public String getUsername() {
-        return username;
-    }
+    public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 
-    /**
-     * Establece el nombre de usuario.
-     *
-     * @param username nombre de usuario
-     */
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    /**
-     * Devuelve la contraseña cifrada del usuario.
-     *
-     * @return hash de la contraseña
-     */
-    public String getPasswordHash() {
-        return passwordHash;
-    }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
 
-    /**
-     * Establece la contraseña cifrada del usuario.
-     *
-     * @param passwordHash hash de la contraseña
-     */
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
+    public Date getUltimaConexion() { return ultimaConexion; }
+    public void setUltimaConexion(Date ultimaConexion) { this.ultimaConexion = ultimaConexion; }
 
-    /**
-     * Devuelve el correo electrónico del usuario.
-     *
-     * @return email del usuario
-     */
-    public String getEmail() {
-        return email;
-    }
-
-    /**
-     * Establece el correo electrónico del usuario.
-     *
-     * @param email correo electrónico
-     */
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    /**
-     * Devuelve el nombre real del usuario.
-     *
-     * @return nombre del usuario
-     */
-    public String getNombre() {
-        return nombre;
-    }
-
-    /**
-     * Establece el nombre real del usuario.
-     *
-     * @param nombre nombre real
-     */
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    /**
-     * Devuelve la fecha de la última conexión del usuario.
-     *
-     * @return fecha de última conexión
-     */
-    public Date getUltimaConexion() {
-        return ultimaConexion;
-    }
-
-    /**
-     * Establece la fecha de la última conexión del usuario.
-     *
-     * @param ultimaConexion fecha de última conexión
-     */
-    public void setUltimaConexion(Date ultimaConexion) {
-        this.ultimaConexion = ultimaConexion;
-    }
-
-    /**
-     * Devuelve la colección de favoritos del usuario.
-     *
-     * @return colección de favoritos
-     */
-    public Collection<Favorito> getFavoritoCollection() {
-        return favoritoCollection;
-    }
-
-    /**
-     * Establece la colección de favoritos del usuario.
-     *
-     * @param favoritoCollection colección de favoritos
-     */
-    public void setFavoritoCollection(Collection<Favorito> favoritoCollection) {
-        this.favoritoCollection = favoritoCollection;
-    }
-
-    /**
-     * Calcula el código hash del usuario.
-     *
-     * @return valor hash
-     */
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
+        return (id != null ? id.hashCode() : 0);
     }
 
-    /**
-     * Compara este usuario con otro objeto.
-     * <p>
-     * Dos usuarios se consideran iguales si tienen el mismo identificador.
-     * </p>
-     *
-     * @param object objeto a comparar
-     * @return {@code true} si son iguales, {@code false} en caso contrario
-     */
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof Usuario)) {
-            return false;
-        }
+        if (!(object instanceof Usuario)) return false;
         Usuario other = (Usuario) object;
         return !((this.id == null && other.id != null)
                 || (this.id != null && !this.id.equals(other.id)));
     }
 
-    /**
-     * Devuelve una representación en texto del usuario.
-     *
-     * @return representación en texto
-     */
     @Override
     public String toString() {
         return "Modelo.Usuario[ id=" + id + " ]";

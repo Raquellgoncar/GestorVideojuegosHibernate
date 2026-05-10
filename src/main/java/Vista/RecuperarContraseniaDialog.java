@@ -58,7 +58,7 @@ public class RecuperarContraseniaDialog extends JDialog {
         controller = new RecuperarContraseniaController();
 
         setTitle(texts.getString("recover.title"));
-        setSize(420, 260);
+        setSize(420, 290);
         setLocationRelativeTo(parent);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
@@ -88,11 +88,24 @@ public class RecuperarContraseniaDialog extends JDialog {
         gbc.anchor = GridBagConstraints.CENTER;
         panel.add(lblTitulo, gbc);
 
+        /* ================= SUBTÍTULO ================= */
+        JLabel lblSubtitulo = new JLabel(texts.getString("recover.subtitle"));
+        lblSubtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblSubtitulo.setForeground(new Color(100, 100, 100));
+
+        gbc.gridy = 1;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(2, 8, 8, 8);
+        panel.add(lblSubtitulo, gbc);
+
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(8, 8, 8, 8);
 
         /* ================= EMAIL ================= */
-        gbc.gridy++;
+        gbc.gridy = 2;
         gbc.gridx = 0;
         gbc.anchor = GridBagConstraints.EAST;
         panel.add(new JLabel(texts.getString("recover.email") + ":"), gbc);
@@ -125,24 +138,78 @@ public class RecuperarContraseniaDialog extends JDialog {
         panel.add(txtEmail, gbc);
 
         /* ================= BOTÓN RECUPERAR ================= */
-        btnRecuperar = new JButton(texts.getString("recover.button"));
+        btnRecuperar = crearBotonMorado(texts.getString("recover.button"));
+        btnRecuperar.setPreferredSize(new Dimension(190, 38));
+        btnRecuperar.setMaximumSize(new Dimension(190, 38));
+        getRootPane().setDefaultButton(btnRecuperar);
 
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         gbc.gridx = 0;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(22, 6, 4, 6);
         panel.add(btnRecuperar, gbc);
 
         /* ================= BOTÓN CANCELAR ================= */
-        btnCancelar = new JButton(texts.getString("recover.cancel"));
+        btnCancelar = crearBotonCancelar(texts.getString("recover.cancel"));
 
-        gbc.gridy = 3;
-        gbc.insets = new Insets(15, 6, 6, 6);
+        gbc.gridy = 4;
+        gbc.insets = new Insets(6, 6, 6, 6);
         panel.add(btnCancelar, gbc);
 
         /* ================= ACCIONES ================= */
         btnCancelar.addActionListener(e -> dispose());
         btnRecuperar.addActionListener(e -> recuperarPassword());
+    }
+
+    /**
+     * Crea el botón principal con degradado morado.
+     *
+     * @param texto texto del botón
+     * @return botón configurado
+     */
+    private JButton crearBotonMorado(String texto) {
+        JButton boton = new JButton(texto) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                GradientPaint gp = new GradientPaint(
+                        0, 0, new Color(180, 120, 255),
+                        0, getHeight(), new Color(110, 40, 180)
+                );
+                g2.setPaint(gp);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        boton.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        boton.setForeground(Color.WHITE);
+        boton.setFocusPainted(false);
+        boton.setBorderPainted(false);
+        boton.setContentAreaFilled(false);
+        boton.setOpaque(false);
+        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return boton;
+    }
+
+    /**
+     * Crea el botón de cancelar como texto plano.
+     *
+     * @param texto texto del botón
+     * @return botón configurado
+     */
+    private JButton crearBotonCancelar(String texto) {
+        JButton boton = new JButton(texto);
+        boton.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        boton.setForeground(new Color(110, 40, 180));
+        boton.setFocusPainted(false);
+        boton.setBorderPainted(false);
+        boton.setContentAreaFilled(false);
+        boton.setOpaque(false);
+        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return boton;
     }
 
     /**

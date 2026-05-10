@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Controlador;
 
 import Modelo.DAO.Imp.UsuarioDAO_imp;
@@ -12,38 +8,32 @@ import Modelo.Usuario;
 import Modelo.util.PasswordService;
 import Vista.MenuPrincipalVista;
 import Vista.PerfilVista;
+import java.util.Map;
 
 /**
  * Controlador encargado de gestionar el perfil del usuario.
  * <p>
  * Permite consultar datos relacionados con el usuario, actualizar su
- * información personal (nombre y contraseña) y gestionar la navegación entre la
- * vista de perfil y el menú principal.
+ * información personal (nombre y contraseña), obtener estadísticas
+ * de la biblioteca y gestionar la navegación entre la vista de perfil
+ * y el menú principal.
  * </p>
  *
  * @author Raquel
- * @version 1.0
+ * @version 2.0
  */
 public class PerfilController {
 
-    /**
-     * Usuario autenticado que utiliza la aplicación.
-     */
+    /** Usuario autenticado que utiliza la aplicación. */
     private Usuario usuario;
 
-    /**
-     * Vista asociada al perfil del usuario.
-     */
+    /** Vista asociada al perfil del usuario. */
     private PerfilVista vista;
 
-    /**
-     * DAO para el acceso a datos de usuarios.
-     */
+    /** DAO para el acceso a datos de usuarios. */
     private UsuarioDAO usuarioDAO = new UsuarioDAO_imp();
 
-    /**
-     * DAO para el acceso a datos de videojuegos.
-     */
+    /** DAO para el acceso a datos de videojuegos. */
     private VideojuegoDAO videojuegoDAO = new VideojuegoDAO_imp();
 
     /**
@@ -65,8 +55,9 @@ public class PerfilController {
     }
 
     /* ===== DATOS ===== */
+
     /**
-     * Obtiene el número total de videojuegos registrados.
+     * Obtiene el número total de videojuegos registrados por el usuario.
      *
      * @return total de videojuegos
      */
@@ -75,11 +66,50 @@ public class PerfilController {
     }
 
     /**
-     * Actualiza el nombre del usuario.
+     * Obtiene el conteo de videojuegos agrupados por plataforma
+     * para generar el gráfico del perfil.
+     *
+     * @return mapa con plataforma y número de videojuegos registrados
+     */
+    public Map<String, Long> obtenerConteoPlataformas() {
+        return videojuegoDAO.countPlataformasByUsuario(usuario.getId());
+    }
+
+    /**
+     * Obtiene la plataforma en la que el usuario tiene más juegos registrados.
      * <p>
-     * Modifica el nombre del usuario actual y guarda los cambios en la base de
-     * datos.
+     * Se usa como filtro para las recomendaciones de RAWG por plataforma.
+     * Devuelve {@code null} si el usuario no tiene videojuegos registrados.
      * </p>
+     *
+     * @return nombre de la plataforma más jugada o {@code null}
+     */
+    public String obtenerPlataformaMasJugada() {
+        Map<String, Long> conteo = videojuegoDAO.countPlataformasByUsuario(usuario.getId());
+        if (conteo == null || conteo.isEmpty()) return null;
+        return conteo.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+    }
+
+    /**
+     * Obtiene el género más frecuente en la biblioteca del usuario.
+     * <p>
+     * Se usa como filtro para las recomendaciones de RAWG por género.
+     * Devuelve {@code null} si el usuario no tiene videojuegos con género.
+     * </p>
+     *
+     * @return nombre del género más jugado o {@code null}
+     */
+    public String obtenerGeneroMasJugado() {
+        return videojuegoDAO.fetchGeneroMasJugado(usuario.getId());
+    }
+
+    /* ===== ACTUALIZACIÓN ===== */
+
+    /**
+     * Actualiza el nombre del usuario.
      *
      * @param nuevoNombre nuevo nombre del usuario
      */
@@ -89,11 +119,7 @@ public class PerfilController {
     }
 
     /**
-     * Actualiza la contraseña del usuario.
-     * <p>
-     * La nueva contraseña se cifra mediante un hash antes de almacenarse en la
-     * base de datos por motivos de seguridad.
-     * </p>
+     * Actualiza la contraseña del usuario cifrándola antes de guardarla.
      *
      * @param nuevaPassword nueva contraseña en texto plano
      */
@@ -104,11 +130,9 @@ public class PerfilController {
     }
 
     /* ===== NAVEGACIÓN ===== */
+
     /**
      * Vuelve al menú principal de la aplicación.
-     * <p>
-     * Abre la ventana del menú principal y cierra la vista actual.
-     * </p>
      */
     public void volverMenu() {
         new MenuPrincipalVista(usuario).setVisible(true);

@@ -10,7 +10,7 @@
         <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
         <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/videojuegos_db?useSSL=false&amp;serverTimezone=UTC</property>
         <property name="hibernate.connection.username">root</property>
-        <property name="hibernate.connection.password">root</property>
+        <property name="hibernate.connection.password"></property>
 
         <!-- Dialecto -->
         <property name="hibernate.dialect">org.hibernate.dialect.MySQL8Dialect</property>
@@ -22,8 +22,7 @@
         <!-- Entidades -->
         <mapping class="Modelo.Usuario"/>
         <mapping class="Modelo.Videojuego"/>
-        <mapping class="Modelo.Favorito"/>
-
+        <mapping class="Modelo.Plataforma"/>
     </session-factory>
 </hibernate-configuration>
 

@@ -6,7 +6,6 @@ package Modelo.util;
 
 import Modelo.Usuario;
 import Modelo.Videojuego;
-import Modelo.Favorito;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
@@ -37,16 +36,16 @@ public class HibernateUtil {
      * <p>
      * Crea la {@code SessionFactory} a partir del archivo de configuración
      * de Hibernate y registra las clases de entidad utilizadas en el
-     * proyecto.
+     * proyecto. La entidad {@code Favorito} ha sido eliminada del modelo
+     * al integrarse como campo booleano en {@code Videojuego}.
      * </p>
      */
     static {
         try {
             sessionFactory = new Configuration()
-                    .configure("hibernate.cfg.xml") // archivo de configuración en resources
+                    .configure("hibernate.cfg.xml")
                     .addAnnotatedClass(Usuario.class)
                     .addAnnotatedClass(Videojuego.class)
-                    .addAnnotatedClass(Favorito.class)
                     .buildSessionFactory();
         } catch (Throwable ex) {
             System.err.println("Error al crear SessionFactory: " + ex);

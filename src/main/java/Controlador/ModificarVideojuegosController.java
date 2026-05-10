@@ -1,15 +1,11 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Controlador;
 
 import Modelo.Usuario;
 import Vista.ActualizarVideojuegoVista;
 import Vista.EliminarVideojuegoVista;
-import Vista.InsertarVideojuegoVista;
 import Vista.MenuPrincipalVista;
 import Vista.ModificarVideojuegosVista;
+import Vista.SeleccionarModoInsertarDialog;
 
 /**
  * Controlador encargado de gestionar la navegación dentro del módulo
@@ -21,7 +17,7 @@ import Vista.ModificarVideojuegosVista;
  * </p>
  *
  * @author Raquel
- * @version 1.0
+ * @version 2.0
  */
 public class ModificarVideojuegosController {
 
@@ -54,47 +50,38 @@ public class ModificarVideojuegosController {
     }
 
     /**
-     * Muestra la vista para insertar un nuevo videojuego.
+     * Muestra el diálogo de selección de modo de inserción.
      * <p>
-     * Abre la ventana de inserción y cierra la vista actual.
+     * El usuario elige entre buscar en el catálogo de RAWG o añadir
+     * el videojuego manualmente. La vista actual no se cierra hasta
+     * que el usuario confirma su elección en el diálogo.
      * </p>
      */
     public void insertar() {
-        new InsertarVideojuegoVista(usuario).setVisible(true);
-        vista.dispose();
+        new SeleccionarModoInsertarDialog(vista, usuario).setVisible(true);
     }
 
     /**
      * Muestra la vista para actualizar un videojuego existente.
-     * <p>
-     * Abre la ventana de actualización y cierra la vista actual.
-     * </p>
+     *
+     * @param vista vista de modificación
      */
     public void actualizar() {
-        new ActualizarVideojuegoVista(usuario).setVisible(true);
-        vista.dispose();
+        new ActualizarVideojuegoVista(usuario, vista).setVisible(true);
     }
 
     /**
      * Muestra la vista para eliminar un videojuego.
-     * <p>
-     * Abre la ventana de eliminación y cierra la vista actual.
-     * </p>
      */
     public void eliminar() {
-        new EliminarVideojuegoVista(usuario).setVisible(true);
-        vista.dispose();
+        new EliminarVideojuegoVista(usuario, vista).setVisible(true);
     }
 
     /**
      * Vuelve al menú principal de la aplicación.
-     * <p>
-     * Abre la ventana del menú principal y cierra la vista actual.
-     * </p>
      */
     public void volverMenu() {
         new MenuPrincipalVista(usuario).setVisible(true);
         vista.dispose();
     }
 }
-

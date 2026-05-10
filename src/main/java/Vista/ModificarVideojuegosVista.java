@@ -67,7 +67,9 @@ public class ModificarVideojuegosVista extends JFrame {
         setSize(800, 550);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setResizable(true);
+        setResizable(false);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        addWindowStateListener(e -> MenuPrincipalVista.mantenerMaximizada(this));
 
         /* ===== CARGA DE IMÁGENES ===== */
         fondoOriginal = new ImageIcon(getClass().getResource("/img/fondomodificar.png")).getImage();
@@ -144,7 +146,7 @@ public class ModificarVideojuegosVista extends JFrame {
         gbc.gridy = 1;
         gbc.weighty = 1;
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.insets = new Insets(90, 0, 0, 0);
+        gbc.insets = new Insets(140, 0, 0, 0);
         root.add(panelCentral, gbc);
 
         /* ================= ACCIONES ================= */
@@ -153,8 +155,7 @@ public class ModificarVideojuegosVista extends JFrame {
         btnEliminar.addActionListener(e -> controller.eliminar());
 
         /* ================= BOTÓN ATRÁS ================= */
-        btnAtras = new JButton(texts.getString("common.back"));
-        btnAtras.setFocusPainted(false);
+        btnAtras = crearBotonMorado(texts.getString("common.back"));
         btnAtras.addActionListener(e -> controller.volverMenu());
 
         gbc = new GridBagConstraints();
@@ -235,6 +236,7 @@ public class ModificarVideojuegosVista extends JFrame {
             b.setPreferredSize(tamBoton);
             b.setMaximumSize(tamBoton);
             b.setFont(fuenteBoton);
+            b.setHorizontalAlignment(SwingConstants.CENTER);
         }
 
         int separacion = (getWidth() < 1000) ? 60 : 120;
@@ -242,16 +244,14 @@ public class ModificarVideojuegosVista extends JFrame {
         sep1.changeShape(sep, sep, sep);
         sep2.changeShape(sep, sep, sep);
 
-        Dimension tamAtras = new Dimension(
-                (int) (100 * escala),
-                (int) (30 * escala)
-        );
-
-        btnAtras.setPreferredSize(tamAtras);
+        btnAtras.setPreferredSize(new Dimension(
+                (int) (92 * escala),
+                (int) (34 * escala)
+        ));
         btnAtras.setFont(new Font(
-                "Impact",
+                "Segoe UI Black",
                 Font.PLAIN,
-                (int) (16 * escala)
+                (int) (14 * escala)
         ));
 
         revalidate();
@@ -279,7 +279,38 @@ public class ModificarVideojuegosVista extends JFrame {
                 );
 
                 g2.setPaint(gp);
-                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 18, 18);
+                g2.dispose();
+
+                super.paintComponent(g);
+            }
+        };
+
+        boton.setForeground(Color.WHITE);
+        boton.setFocusPainted(false);
+        boton.setBorderPainted(false);
+        boton.setContentAreaFilled(false);
+        boton.setOpaque(false);
+        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        return boton;
+    }
+
+    private JButton crearBotonMorado(String texto) {
+
+        JButton boton = new JButton(texto) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                GradientPaint gp = new GradientPaint(
+                        0, 0, new Color(180, 120, 255),
+                        0, getHeight(), new Color(110, 40, 180)
+                );
+
+                g2.setPaint(gp);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 16, 16);
                 g2.dispose();
 
                 super.paintComponent(g);

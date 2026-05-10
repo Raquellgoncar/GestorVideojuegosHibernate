@@ -4,11 +4,8 @@
  */
 package Controlador;
 
-import Modelo.DAO.FavoritoDAO;
-import Modelo.DAO.Imp.FavoritoDAO_imp;
 import Modelo.DAO.Imp.VideojuegoDAO_imp;
 import Modelo.DAO.VideojuegoDAO;
-import Modelo.Favorito;
 import Modelo.Usuario;
 import Modelo.Videojuego;
 import Vista.ActualizarVideojuegoVista;
@@ -45,14 +42,9 @@ public class ActualizarVideojuegoController {
     private VideojuegoDAO videojuegoDAO;
 
     /**
-     * DAO para el acceso a datos de favoritos.
-     */
-    private FavoritoDAO favoritoDAO;
-
-    /**
      * Constructor del controlador.
      * <p>
-     * Inicializa el usuario y crea las implementaciones de los DAO necesarios
+     * Inicializa el usuario y crea la implementación del DAO necesario
      * para acceder a la base de datos.
      * </p>
      *
@@ -61,7 +53,6 @@ public class ActualizarVideojuegoController {
     public ActualizarVideojuegoController(Usuario usuario) {
         this.usuario = usuario;
         this.videojuegoDAO = new VideojuegoDAO_imp();
-        this.favoritoDAO = new FavoritoDAO_imp();
     }
 
     /**
@@ -84,11 +75,15 @@ public class ActualizarVideojuegoController {
 
     /**
      * Obtiene la lista de videojuegos marcados como favoritos por el usuario.
+     * <p>
+     * Ahora se obtienen directamente desde la tabla videojuegos
+     * filtrando por el campo booleano {@code favorito}.
+     * </p>
      *
-     * @return lista de favoritos del usuario
+     * @return lista de videojuegos favoritos del usuario
      */
-    public List<Favorito> obtenerFavoritosUsuario() {
-        return favoritoDAO.fetchByUsuario(usuario.getId());
+    public List<Videojuego> obtenerFavoritosUsuario() {
+        return videojuegoDAO.fetchFavoritosByUsuario(usuario.getId());
     }
 
     /**

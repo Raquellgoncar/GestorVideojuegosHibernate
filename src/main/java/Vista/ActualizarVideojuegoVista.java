@@ -1,359 +1,233 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Vista;
 
 import Controlador.ActualizarVideojuegoController;
 import Modelo.Usuario;
 import Modelo.Videojuego;
-import Modelo.Favorito;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.util.List;
 import java.util.ResourceBundle;
 
 /**
  * Vista para la selección y actualización de videojuegos.
- * <p>
- * Muestra un listado de los videojuegos del usuario en una tabla,
- * permite buscarlos por título y seleccionar uno para modificar
- * sus datos mediante un diálogo de actualización.
- * </p>
- *
- * Sigue el patrón MVC, delegando la lógica de negocio en
- * {@link ActualizarVideojuegoController}.
+ * Estética oscura coherente con el resto de la aplicación.
  *
  * @author Raquel
- * @version 1.0
+ * @version 3.0
  */
 public class ActualizarVideojuegoVista extends JFrame {
 
-    /** Usuario autenticado */
+    private static final Color BG_DARK       = new Color(18, 10, 35);
+    private static final Color BG_CARD       = new Color(35, 20, 60);
+    private static final Color PURPLE_LIGHT  = new Color(180, 120, 255);
+    private static final Color PURPLE_DARK   = new Color(110, 40, 180);
+    private static final Color TEXT_PRIMARY  = new Color(240, 235, 255);
+    private static final Color TEXT_SECONDARY= new Color(170, 150, 210);
+    private static final Color SEPARATOR     = new Color(70, 45, 110);
+    private static final Color TABLE_ROW_ALT = new Color(42, 25, 70);
+    private static final Color TABLE_SEL     = new Color(110, 40, 180);
+    private static final Color FIELD_BG      = new Color(28, 15, 50);
+
     private Usuario usuario;
-
-    /** Tabla que muestra los videojuegos */
+    private ModificarVideojuegosVista padre;
     private JTable tabla;
-
-    /** Modelo de la tabla */
     private DefaultTableModel modelo;
-
-    /** Campo de búsqueda */
     private JTextField txtBuscar;
-
-    /** Botones de la vista */
-    private JButton btnBuscar, btnActualizar, btnAtras;
-
-    /** Recursos de internacionalización */
+    private JButton btnBuscar, btnLimpiarBusqueda, btnActualizar, btnAtras;
     private ResourceBundle texts;
-
-    /** Controlador asociado a la vista */
     private ActualizarVideojuegoController controller;
 
-    /**
-     * Constructor de la vista de actualización de videojuegos.
-     *
-     * @param usuario usuario autenticado
-     */
-    public ActualizarVideojuegoVista(Usuario usuario) {
-        this.usuario = usuario;
+    public ActualizarVideojuegoVista(Usuario usuario) { this(usuario, null); }
 
+    public ActualizarVideojuegoVista(Usuario usuario, ModificarVideojuegosVista padre) {
+        this.usuario = usuario; this.padre = padre;
         texts = ResourceBundle.getBundle("i18n.messages");
-
         controller = new ActualizarVideojuegoController(usuario);
         controller.setVista(this);
-
         setTitle(texts.getString("update.window.title"));
-        setSize(750, 450);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        initComponents();
-        cargarVideojuegos();
+        setDefaultCloseOperation(padre != null ? JFrame.DISPOSE_ON_CLOSE : JFrame.EXIT_ON_CLOSE);
+        setResizable(true); setExtendedState(JFrame.MAXIMIZED_BOTH);
+        initComponents(); cargarVideojuegos();
     }
 
-    /**
-     * Inicializa y organiza los componentes gráficos de la ventana.
-     */
     private void initComponents() {
-
-        setLayout(new BorderLayout(10, 10));
-
-        /* ================= TÍTULO ================= */
-        JLabel lblTitulo = new JLabel(
-                texts.getString("update.title"),
-                SwingConstants.CENTER
-        );
-        lblTitulo.setFont(new Font("Showcard Gothic", Font.PLAIN, 28));
-        lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
-        add(lblTitulo, BorderLayout.NORTH);
-
-        /* ================= PANEL CENTRAL ================= */
-        JPanel panelCentro = new JPanel(new BorderLayout(10, 10));
-
-        /* ===== BUSCADOR ===== */
-        JPanel panelBuscar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-
-        txtBuscar = new JTextField(20);
-        txtBuscar.setPreferredSize(new Dimension(
-                txtBuscar.getPreferredSize().width,
-                32
-        ));
-        ponerPlaceholder(txtBuscar, texts.getString("update.search.placeholder"));
-
-        btnBuscar = new JButton(texts.getString("update.search"));
-
-        panelBuscar.add(txtBuscar);
-        panelBuscar.add(btnBuscar);
-        panelCentro.add(panelBuscar, BorderLayout.NORTH);
-
-        /* ===== TABLA ===== */
-        modelo = new DefaultTableModel(
-                new Object[]{
-                    texts.getString("update.table.id"),
-                    texts.getString("update.table.title"),
-                    texts.getString("update.table.platform"),
-                    texts.getString("update.table.year"),
-                    texts.getString("update.table.rating"),
-                    texts.getString("update.table.favorite")
-                },
-                0
-        ) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
+        JPanel fondo = new JPanel(new BorderLayout()) {
+            @Override protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setPaint(new GradientPaint(0, 0, BG_DARK, getWidth(), getHeight(), new Color(28, 10, 50)));
+                g2.fillRect(0, 0, getWidth(), getHeight()); g2.dispose();
             }
         };
+        fondo.setOpaque(false); setContentPane(fondo);
 
-        tabla = new JTable(modelo);
-        tabla.setRowHeight(26);
+        JPanel cabecera = new JPanel(new BorderLayout());
+        cabecera.setOpaque(false);
+        cabecera.setBorder(BorderFactory.createEmptyBorder(25, 40, 10, 40));
+
+        JLabel lblTitulo = new JLabel(texts.getString("update.title"), SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Showcard Gothic", Font.PLAIN, 32));
+        lblTitulo.setForeground(TEXT_PRIMARY);
+        cabecera.add(lblTitulo, BorderLayout.CENTER);
+
+        JPanel panelBuscar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        panelBuscar.setOpaque(false);
+        txtBuscar = new JTextField(22);
+        txtBuscar.setBackground(FIELD_BG); txtBuscar.setForeground(TEXT_PRIMARY);
+        txtBuscar.setCaretColor(TEXT_PRIMARY);
+        txtBuscar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtBuscar.setPreferredSize(new Dimension(280, 34));
+        ponerPlaceholder(txtBuscar, texts.getString("update.search.placeholder"));
+        btnLimpiarBusqueda = crearBotonLimpiar();
+        JPanel campoBusqueda = crearCampoBusquedaConLimpiar(txtBuscar, btnLimpiarBusqueda);
+        btnBuscar = crearBotonMorado(texts.getString("update.search"), new Dimension(100, 34), e -> buscarVideojuegos());
+        panelBuscar.add(campoBusqueda); panelBuscar.add(btnBuscar);
+        cabecera.add(panelBuscar, BorderLayout.SOUTH);
+        fondo.add(cabecera, BorderLayout.NORTH);
+
+        modelo = new DefaultTableModel(new Object[]{
+                texts.getString("update.table.id"), texts.getString("update.table.title"),
+                texts.getString("update.table.platform"), texts.getString("update.table.year"),
+                texts.getString("update.table.rating"), texts.getString("update.table.favorite")
+        }, 0) { @Override public boolean isCellEditable(int r, int c) { return false; } };
+
+        tabla = new JTable(modelo) {
+            @Override public Component prepareRenderer(javax.swing.table.TableCellRenderer r, int row, int col) {
+                Component c = super.prepareRenderer(r, row, col);
+                if (isRowSelected(row)) { c.setBackground(TABLE_SEL); c.setForeground(Color.WHITE); }
+                else { c.setBackground(row % 2 == 0 ? BG_CARD : TABLE_ROW_ALT); c.setForeground(TEXT_PRIMARY); }
+                return c;
+            }
+        };
+        tabla.setRowHeight(44); tabla.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        tabla.setBackground(BG_CARD); tabla.setForeground(TEXT_PRIMARY);
+        tabla.setSelectionBackground(TABLE_SEL); tabla.setSelectionForeground(Color.WHITE);
+        tabla.setGridColor(SEPARATOR); tabla.setShowVerticalLines(false);
+        tabla.setIntercellSpacing(new Dimension(0, 1));
+        tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        JTableHeader header = tabla.getTableHeader();
+        header.setBackground(new Color(50, 30, 85)); header.setForeground(TEXT_PRIMARY);
+        header.setFont(new Font("Segoe UI Black", Font.PLAIN, 15));
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, SEPARATOR));
+        header.setReorderingAllowed(false);
 
         tabla.getColumnModel().getColumn(0).setMinWidth(0);
         tabla.getColumnModel().getColumn(0).setMaxWidth(0);
         tabla.getColumnModel().getColumn(0).setWidth(0);
-
         DefaultTableCellRenderer centrado = new DefaultTableCellRenderer();
         centrado.setHorizontalAlignment(SwingConstants.CENTER);
-        tabla.getColumnModel().getColumn(3).setCellRenderer(centrado);
-        tabla.getColumnModel().getColumn(4).setCellRenderer(centrado);
-        tabla.getColumnModel().getColumn(5).setCellRenderer(centrado);
+        for (int i = 3; i <= 5; i++) tabla.getColumnModel().getColumn(i).setCellRenderer(centrado);
 
         JScrollPane scroll = new JScrollPane(tabla);
-        panelCentro.add(scroll, BorderLayout.CENTER);
+        scroll.setBorder(BorderFactory.createLineBorder(SEPARATOR));
+        scroll.getViewport().setBackground(BG_CARD);
 
-        add(panelCentro, BorderLayout.CENTER);
+        JPanel panelTabla = new JPanel(new BorderLayout());
+        panelTabla.setOpaque(false);
+        panelTabla.setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 40));
+        panelTabla.add(scroll, BorderLayout.CENTER);
+        fondo.add(panelTabla, BorderLayout.CENTER);
 
-        /* ================= PANEL INFERIOR ================= */
-        JPanel panelSur = new JPanel(new BorderLayout());
-        panelSur.setBorder(BorderFactory.createEmptyBorder(10, 15, 15, 15));
+        JPanel pie = new JPanel(new BorderLayout());
+        pie.setOpaque(false); pie.setBorder(BorderFactory.createEmptyBorder(5, 40, 18, 40));
+        btnAtras = crearBotonMorado(texts.getString("update.back"), new Dimension(120, 34), e -> volverAtras());
+        btnActualizar = crearBotonMorado(texts.getString("update.update"), new Dimension(190, 40), e -> actualizarSeleccionado());
+        JPanel pI = new JPanel(new FlowLayout(FlowLayout.LEFT)); pI.setOpaque(false); pI.add(btnAtras);
+        JPanel pD = new JPanel(new FlowLayout(FlowLayout.RIGHT)); pD.setOpaque(false); pD.add(btnActualizar);
+        pie.add(pI, BorderLayout.WEST); pie.add(pD, BorderLayout.EAST);
+        fondo.add(pie, BorderLayout.SOUTH);
 
-        btnAtras = crearBotonMorado(
-                texts.getString("update.back"),
-                new Dimension(120, 32),
-                e -> controller.volverModificar()
-        );
-
-        btnActualizar = crearBotonMorado(
-                texts.getString("update.update"),
-                new Dimension(180, 38),
-                e -> actualizarSeleccionado()
-        );
-
-        JPanel panelIzq = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panelIzq.setOpaque(false);
-        panelIzq.add(btnAtras);
-
-        JPanel panelDer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        panelDer.setOpaque(false);
-        panelDer.add(btnActualizar);
-
-        panelSur.add(panelIzq, BorderLayout.WEST);
-        panelSur.add(panelDer, BorderLayout.EAST);
-
-        add(panelSur, BorderLayout.SOUTH);
-
-        /* ================= ACCIONES ================= */
-        btnBuscar.addActionListener(e -> buscarVideojuegos());
-
-        SwingUtilities.invokeLater(() -> requestFocusInWindow());
+        btnLimpiarBusqueda.addActionListener(e -> limpiarBusqueda());
     }
 
-    /**
-     * Crea un botón con estilo morado personalizado.
-     *
-     * @param texto texto del botón
-     * @param tamaño tamaño del botón
-     * @param action acción a ejecutar
-     * @return botón configurado
-     */
-    private JButton crearBotonMorado(
-            String texto,
-            Dimension tamaño,
-            java.awt.event.ActionListener action
-    ) {
-
-        JButton boton = new JButton(texto) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(
-                        RenderingHints.KEY_ANTIALIASING,
-                        RenderingHints.VALUE_ANTIALIAS_ON
-                );
-
-                GradientPaint gp = new GradientPaint(
-                        0, 0, new Color(180, 120, 255),
-                        0, getHeight(), new Color(110, 40, 180)
-                );
-
-                g2.setPaint(gp);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 16, 16);
-                g2.dispose();
-
-                super.paintComponent(g);
-            }
-        };
-
-        boton.setForeground(Color.WHITE);
-        boton.setFont(new Font("Segoe UI Black", Font.PLAIN, 15));
-        boton.setFocusPainted(false);
-        boton.setBorderPainted(false);
-        boton.setContentAreaFilled(false);
-        boton.setOpaque(false);
-        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        boton.setPreferredSize(tamaño);
-
-        boton.addActionListener(action);
-        return boton;
-    }
-
-    /**
-     * Carga en la tabla los videojuegos del usuario.
-     */
     private void cargarVideojuegos() {
-
         modelo.setRowCount(0);
-
-        List<Videojuego> videojuegos = controller.obtenerVideojuegosUsuario();
-        List<Favorito> favoritos = controller.obtenerFavoritosUsuario();
-
-        for (Videojuego v : videojuegos) {
-
-            boolean esFavorito = favoritos.stream()
-                    .anyMatch(f -> f.getVideojuegoId().getId().equals(v.getId()));
-
-            modelo.addRow(new Object[]{
-                v.getId(),
-                v.getTitulo(),
-                v.getPlataforma(),
-                v.getAnio(),
-                v.getValoracion(),
-                esFavorito
-                    ? texts.getString("update.yes")
-                    : texts.getString("update.no")
-            });
+        for (Videojuego v : controller.obtenerVideojuegosUsuario()) {
+            modelo.addRow(new Object[]{v.getId(), v.getTitulo(), v.getPlataforma(),
+                    v.getFechaMostrada(), v.getValoracionMostrada(),
+                    v.isFavorito() ? texts.getString("update.yes") : texts.getString("update.no")});
         }
     }
 
-    /**
-     * Filtra los videojuegos mostrados en la tabla según el texto introducido.
-     */
     private void buscarVideojuegos() {
-
         String texto = txtBuscar.getText().trim().toLowerCase();
         modelo.setRowCount(0);
-
-        List<Videojuego> videojuegos = controller.obtenerVideojuegosUsuario();
-        List<Favorito> favoritos = controller.obtenerFavoritosUsuario();
-
-        for (Videojuego v : videojuegos) {
-
-            if (texto.isEmpty()
-                    || texto.equals(texts.getString("update.search.placeholder").toLowerCase())
+        for (Videojuego v : controller.obtenerVideojuegosUsuario()) {
+            if (texto.isEmpty() || texto.equals(texts.getString("update.search.placeholder").toLowerCase())
                     || v.getTitulo().toLowerCase().contains(texto)) {
-
-                boolean esFavorito = favoritos.stream()
-                        .anyMatch(f -> f.getVideojuegoId().getId().equals(v.getId()));
-
-                modelo.addRow(new Object[]{
-                    v.getId(),
-                    v.getTitulo(),
-                    v.getPlataforma(),
-                    v.getAnio(),
-                    v.getValoracion(),
-                    esFavorito
-                        ? texts.getString("update.yes")
-                        : texts.getString("update.no")
-                });
+                modelo.addRow(new Object[]{v.getId(), v.getTitulo(), v.getPlataforma(),
+                        v.getFechaMostrada(), v.getValoracionMostrada(),
+                        v.isFavorito() ? texts.getString("update.yes") : texts.getString("update.no")});
             }
         }
     }
 
-    /**
-     * Abre el diálogo de actualización para el videojuego seleccionado.
-     */
+    private void limpiarBusqueda() {
+        txtBuscar.setText(""); txtBuscar.setForeground(TEXT_PRIMARY);
+        tabla.clearSelection(); cargarVideojuegos(); txtBuscar.requestFocusInWindow();
+    }
+
     private void actualizarSeleccionado() {
-
         int fila = tabla.getSelectedRow();
-
-        if (fila == -1) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    texts.getString("update.select.warning"),
-                    texts.getString("update.select.title"),
-                    JOptionPane.WARNING_MESSAGE
-            );
-            return;
-        }
-
-        int idVideojuego = (int) modelo.getValueAt(fila, 0);
-
-        Videojuego v = controller.obtenerVideojuegoPorId(idVideojuego);
-
-        boolean esFavorito = modelo.getValueAt(fila, 5)
-                .equals(texts.getString("update.yes"));
-
-        new ActualizarVideojuegoDialog(
-                this,
-                controller.getUsuario(),
-                v,
-                esFavorito
-        ).setVisible(true);
-
+        if (fila == -1) { JOptionPane.showMessageDialog(this, texts.getString("update.select.warning"),
+                texts.getString("update.select.title"), JOptionPane.WARNING_MESSAGE); return; }
+        int id = (int) modelo.getValueAt(fila, 0);
+        Videojuego v = controller.obtenerVideojuegoPorId(id);
+        new ActualizarVideojuegoDialog(this, controller.getUsuario(), v).setVisible(true);
         cargarVideojuegos();
     }
 
-    /**
-     * Aplica un comportamiento de placeholder a un campo de texto.
-     *
-     * @param campo campo de texto
-     * @param texto texto del placeholder
-     */
-    private void ponerPlaceholder(JTextField campo, String texto) {
+    private void volverAtras() {
+        dispose();
+        if (padre != null) { padre.setVisible(true); padre.toFront(); }
+        else { controller.volverModificar(); }
+    }
 
-        campo.setText(texto);
-        campo.setForeground(Color.GRAY);
-
-        campo.addFocusListener(new FocusAdapter() {
-
-            @Override
-            public void focusGained(FocusEvent e) {
-                if (campo.getText().equals(texto)) {
-                    campo.setText("");
-                    campo.setForeground(Color.BLACK);
-                }
+    private JButton crearBotonMorado(String texto, Dimension tam, java.awt.event.ActionListener a) {
+        JButton b = new JButton(texto) {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setPaint(new GradientPaint(0, 0, PURPLE_LIGHT, 0, getHeight(), PURPLE_DARK));
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 14, 14);
+                g2.dispose(); super.paintComponent(g);
             }
+        };
+        b.setForeground(Color.WHITE); b.setFont(new Font("Segoe UI Black", Font.PLAIN, 14));
+        b.setFocusPainted(false); b.setBorderPainted(false); b.setContentAreaFilled(false);
+        b.setOpaque(false); b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setPreferredSize(tam); b.addActionListener(a); return b;
+    }
 
-            @Override
-            public void focusLost(FocusEvent e) {
-                if (campo.getText().isEmpty()) {
-                    campo.setText(texto);
-                    campo.setForeground(Color.GRAY);
-                }
+    private JButton crearBotonLimpiar() {
+        JButton b = new JButton("X"); b.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        b.setForeground(TEXT_SECONDARY); b.setFocusPainted(false); b.setBorderPainted(false);
+        b.setContentAreaFilled(false); b.setMargin(new Insets(0,0,0,0));
+        b.setPreferredSize(new Dimension(26, 30)); b.setToolTipText(texts.getString("search.clear.tooltip"));
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR)); return b;
+    }
+
+    private JPanel crearCampoBusquedaConLimpiar(JTextField campo, JButton limpiar) {
+        JPanel p = new JPanel(new BorderLayout()); p.setBackground(FIELD_BG);
+        p.setBorder(BorderFactory.createLineBorder(SEPARATOR)); p.setPreferredSize(new Dimension(280, 34));
+        campo.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 4)); campo.setOpaque(false);
+        p.add(campo, BorderLayout.CENTER); p.add(limpiar, BorderLayout.EAST); return p;
+    }
+
+    private void ponerPlaceholder(JTextField campo, String texto) {
+        campo.setText(texto); campo.setForeground(TEXT_SECONDARY);
+        campo.addFocusListener(new FocusAdapter() {
+            @Override public void focusGained(FocusEvent e) {
+                if (campo.getText().equals(texto)) { campo.setText(""); campo.setForeground(TEXT_PRIMARY); }
+            }
+            @Override public void focusLost(FocusEvent e) {
+                if (campo.getText().isEmpty()) { campo.setText(texto); campo.setForeground(TEXT_SECONDARY); }
             }
         });
     }

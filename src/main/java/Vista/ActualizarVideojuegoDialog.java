@@ -1,418 +1,344 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Vista;
 
-import Modelo.DAO.FavoritoDAO;
-import Modelo.DAO.Imp.FavoritoDAO_imp;
+import Modelo.DAO.Imp.PlataformaDAO_imp;
 import Modelo.DAO.Imp.VideojuegoDAO_imp;
+import Modelo.DAO.PlataformaDAO;
 import Modelo.DAO.VideojuegoDAO;
-import Modelo.Videojuego;
-import Modelo.Favorito;
+import Modelo.Plataforma;
 import Modelo.Usuario;
+import Modelo.Videojuego;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.geom.Path2D;
+import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
+import java.util.List;
 import java.util.ResourceBundle;
 
 /**
  * Diálogo para la actualización de un videojuego existente.
- * <p>
- * Permite modificar los datos de un videojuego (título, plataforma,
- * año y valoración) y gestionar si está marcado como favorito.
- * Los cambios se guardan en la base de datos utilizando los DAO
- * correspondientes.
- * </p>
+ * Estética oscura coherente con el resto de la aplicación.
  *
  * @author Raquel
- * @version 1.0
+ * @version 3.0
  */
 public class ActualizarVideojuegoDialog extends JDialog {
 
-    /** Campos de texto del formulario */
-    private JTextField txtTitulo, txtPlataforma, txtAnio, txtValoracion;
+    private static final Color BG_DARK       = new Color(18, 10, 35);
+    private static final Color BG_CARD       = new Color(35, 20, 60);
+    private static final Color PURPLE_LIGHT  = new Color(180, 120, 255);
+    private static final Color PURPLE_DARK   = new Color(110, 40, 180);
+    private static final Color TEXT_PRIMARY  = new Color(240, 235, 255);
+    private static final Color TEXT_SECONDARY= new Color(170, 150, 210);
+    private static final Color SEPARATOR     = new Color(70, 45, 110);
+    private static final Color FIELD_BG      = new Color(28, 15, 50);
 
-    /** Botón para marcar o desmarcar el videojuego como favorito */
+    private JTextField txtTitulo, txtAnio;
+    private JComboBox<Plataforma> cmbPlataforma;
+    private JComboBox<String> cmbGenero;
+    private JComboBox<Integer> cmbValoracion;
+    private JTextArea txtAnotaciones;
+    private JLabel lblContadorAnotaciones;
     private JToggleButton btnFavorito;
-
-    /** Botones de acción del diálogo */
     private JButton btnAceptar, btnCancelar;
-
-    /** Usuario autenticado */
     private Usuario usuario;
-
-    /** Videojuego que se va a actualizar */
     private Videojuego videojuego;
-
-    /** Indica si el videojuego era favorito antes de la modificación */
-    private boolean eraFavorito;
-
-    /** DAO para la gestión de videojuegos */
     private VideojuegoDAO videojuegoDAO = new VideojuegoDAO_imp();
-
-    /** DAO para la gestión de favoritos */
-    private FavoritoDAO favoritoDAO = new FavoritoDAO_imp();
-
-    /** Recursos de internacionalización */
     private ResourceBundle texts;
 
-    /**
-     * Constructor del diálogo de actualización de videojuegos.
-     *
-     * @param parent ventana padre
-     * @param usuario usuario autenticado
-     * @param videojuego videojuego a modificar
-     * @param esFavorito indica si el videojuego estaba marcado como favorito
-     */
-    public ActualizarVideojuegoDialog(
-            JFrame parent,
-            Usuario usuario,
-            Videojuego videojuego,
-            boolean esFavorito
-    ) {
+    private static final int MAX_ANOTACIONES = 120;
+    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/uuuu")
+            .withResolverStyle(ResolverStyle.STRICT);
+
+    private static final String[] GENEROS = {
+        "", "Action", "Adventure", "RPG", "Strategy", "Shooter",
+        "Puzzle", "Arcade", "Platformer", "Racing", "Sports",
+        "Fighting", "Simulation", "Family", "Board Games",
+        "Educational", "Card", "Casual", "Massively Multiplayer", "Indie"
+    };
+
+    public ActualizarVideojuegoDialog(JFrame parent, Usuario usuario, Videojuego videojuego) {
         super(parent, true);
-        this.usuario = usuario;
-        this.videojuego = videojuego;
-        this.eraFavorito = esFavorito;
-
+        this.usuario = usuario; this.videojuego = videojuego;
         texts = ResourceBundle.getBundle("i18n.messages");
-
         setTitle(texts.getString("update.dialog.window.title"));
-        setSize(560, 580);
-        setLocationRelativeTo(parent);
-        setResizable(false);
-
-        initComponents();
-        cargarDatos();
+        setSize(660, 720); setLocationRelativeTo(parent); setResizable(false);
+        initComponents(); cargarDatos();
     }
 
-    /**
-     * Inicializa y organiza los componentes gráficos del diálogo.
-     */
     private void initComponents() {
+        JPanel fondo = new JPanel(new BorderLayout()) {
+            @Override protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setPaint(new GradientPaint(0, 0, BG_DARK, getWidth(), getHeight(), new Color(28, 10, 50)));
+                g2.fillRect(0, 0, getWidth(), getHeight()); g2.dispose();
+            }
+        };
+        fondo.setOpaque(false); setContentPane(fondo);
 
-        setLayout(new BorderLayout());
+        JPanel tarjeta = new JPanel(new GridBagLayout()) {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(BG_CARD); g2.fillRoundRect(0, 0, getWidth(), getHeight(), 18, 18);
+                g2.setColor(SEPARATOR); g2.setStroke(new BasicStroke(1f));
+                g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 18, 18); g2.dispose();
+            }
+        };
+        tarjeta.setOpaque(false); tarjeta.setBorder(BorderFactory.createEmptyBorder(20, 35, 15, 35));
 
-        JPanel root = new JPanel(new GridBagLayout());
-        root.setBorder(BorderFactory.createEmptyBorder(30, 30, 0, 30));
-        add(root, BorderLayout.CENTER);
+        JPanel centrador = new JPanel(new GridBagLayout());
+        centrador.setOpaque(false); centrador.setBorder(BorderFactory.createEmptyBorder(18, 35, 18, 35));
+        GridBagConstraints gbcC = new GridBagConstraints();
+        gbcC.fill = GridBagConstraints.BOTH; gbcC.weightx = 1; gbcC.weighty = 1;
+        centrador.add(tarjeta, gbcC);
+        fondo.add(centrador, BorderLayout.CENTER);
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(14, 10, 14, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(7, 10, 7, 10); gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        /* ===== TÍTULO ===== */
-        JLabel lblTitulo = new JLabel(
-                texts.getString("update.dialog.title"),
-                SwingConstants.CENTER
-        );
-        lblTitulo.setFont(new Font("Showcard Gothic", Font.PLAIN, 34));
+        JLabel lblTitulo = new JLabel(texts.getString("update.dialog.title"), SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Showcard Gothic", Font.PLAIN, 28)); lblTitulo.setForeground(TEXT_PRIMARY);
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2; tarjeta.add(lblTitulo, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        root.add(lblTitulo, gbc);
-
-        /* ===== NOMBRE DEL JUEGO ===== */
         JLabel lblNombre = new JLabel(videojuego.getTitulo(), SwingConstants.CENTER);
-        lblNombre.setFont(new Font("Arial Black", Font.PLAIN, 22));
-        lblNombre.setForeground(Color.DARK_GRAY);
-        lblNombre.setBorder(BorderFactory.createEmptyBorder(6, 0, 10, 0));
+        lblNombre.setFont(new Font("Segoe UI Black", Font.PLAIN, 18)); lblNombre.setForeground(PURPLE_LIGHT);
+        lblNombre.setBorder(BorderFactory.createEmptyBorder(2, 0, 4, 0));
+        gbc.gridy++; tarjeta.add(lblNombre, gbc);
 
-        gbc.gridy++;
-        root.add(lblNombre, gbc);
+        JSeparator sep = new JSeparator(); sep.setForeground(SEPARATOR); sep.setBackground(SEPARATOR);
+        gbc.gridy++; gbc.insets = new Insets(0, 10, 10, 10); tarjeta.add(sep, gbc);
+        gbc.insets = new Insets(7, 10, 7, 10); gbc.gridwidth = 1;
 
-        gbc.gridwidth = 1;
+        Font fl = new Font("Segoe UI", Font.BOLD, 14);
 
-        Font fuenteLabel = new Font("Arial", Font.BOLD, 15);
+        gbc.gridy++; gbc.gridx = 0; tarjeta.add(crearLabel(texts.getString("update.field.title") + ":", fl), gbc);
+        txtTitulo = crearCampo(); gbc.gridx = 1; tarjeta.add(txtTitulo, gbc);
 
-        /* ===== CAMPOS ===== */
-        gbc.gridy++;
+        gbc.gridy++; gbc.gridx = 0; tarjeta.add(crearLabel(texts.getString("update.field.platform") + ":", fl), gbc);
+        cmbPlataforma = new JComboBox<>(); cargarPlataformas(); estilizarCombo(cmbPlataforma);
+        gbc.gridx = 1; tarjeta.add(cmbPlataforma, gbc);
 
-        JLabel lblT = new JLabel(texts.getString("update.field.title") + ":");
-        lblT.setFont(fuenteLabel);
-        root.add(lblT, gbc);
+        gbc.gridy++; gbc.gridx = 0; tarjeta.add(crearLabel(texts.getString("update.field.year") + ":", fl), gbc);
+        txtAnio = crearCampo(); gbc.gridx = 1; tarjeta.add(txtAnio, gbc);
 
-        txtTitulo = crearCampoTexto();
-        gbc.gridx = 1;
-        root.add(txtTitulo, gbc);
+        gbc.gridy++; gbc.gridx = 0; tarjeta.add(crearLabel(texts.getString("update.field.genre") + ":", fl), gbc);
+        cmbGenero = new JComboBox<>(GENEROS); estilizarCombo(cmbGenero);
+        cmbGenero.setRenderer(new DefaultListCellRenderer() {
+            @Override public Component getListCellRendererComponent(JList<?> list, Object value,
+                    int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                setBackground(isSelected ? PURPLE_DARK : FIELD_BG);
+                if (value == null || value.toString().isEmpty()) { setText("-- Sin genero --"); setForeground(TEXT_SECONDARY); }
+                else { setForeground(TEXT_PRIMARY); }
+                return this;
+            }
+        });
+        gbc.gridx = 1; tarjeta.add(cmbGenero, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy++;
+        gbc.gridy++; gbc.gridx = 0; tarjeta.add(crearLabel(texts.getString("update.field.rating") + ":", fl), gbc);
+        cmbValoracion = new JComboBox<>();
+        for (int i = 1; i <= 10; i++) cmbValoracion.addItem(i);
+        estilizarCombo(cmbValoracion); gbc.gridx = 1; tarjeta.add(cmbValoracion, gbc);
 
-        JLabel lblP = new JLabel(texts.getString("update.field.platform") + ":");
-        lblP.setFont(fuenteLabel);
-        root.add(lblP, gbc);
+        gbc.gridy++; gbc.gridx = 0; gbc.anchor = GridBagConstraints.NORTHWEST;
+        tarjeta.add(crearLabel(texts.getString("update.field.annotation") + ":", fl), gbc);
+        gbc.anchor = GridBagConstraints.CENTER;
+        txtAnotaciones = new JTextArea(5, 20);
+        txtAnotaciones.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtAnotaciones.setLineWrap(true); txtAnotaciones.setWrapStyleWord(true);
+        txtAnotaciones.setBackground(FIELD_BG); txtAnotaciones.setForeground(TEXT_PRIMARY);
+        txtAnotaciones.setCaretColor(TEXT_PRIMARY); txtAnotaciones.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
+        limitarCaracteres(txtAnotaciones, MAX_ANOTACIONES);
+        JScrollPane sc = new JScrollPane(txtAnotaciones);
+        sc.setPreferredSize(new Dimension(340, 110)); sc.setBorder(BorderFactory.createLineBorder(SEPARATOR));
+        sc.getViewport().setBackground(FIELD_BG);
+        gbc.gridx = 1; tarjeta.add(crearPanelAnotaciones(sc, new Dimension(340, 130)), gbc);
 
-        txtPlataforma = crearCampoTexto();
-        gbc.gridx = 1;
-        root.add(txtPlataforma, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy++;
-
-        JLabel lblA = new JLabel(texts.getString("update.field.year") + ":");
-        lblA.setFont(fuenteLabel);
-        root.add(lblA, gbc);
-
-        txtAnio = crearCampoTexto();
-        gbc.gridx = 1;
-        root.add(txtAnio, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy++;
-
-        JLabel lblV = new JLabel(texts.getString("update.field.rating") + ":");
-        lblV.setFont(fuenteLabel);
-        root.add(lblV, gbc);
-
-        txtValoracion = crearCampoTexto();
-        gbc.gridx = 1;
-        root.add(txtValoracion, gbc);
-
-        /* ===== FAVORITO ===== */
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.gridwidth = 2;
-
-        JPanel panelFav = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        panelFav.setOpaque(false);
-
+        gbc.gridy++; gbc.gridx = 0; gbc.gridwidth = 2;
+        JPanel panelFav = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0)); panelFav.setOpaque(false);
         btnFavorito = new JToggleButton();
-        btnFavorito.setIcon(cargarIconoEscalado("/img/estrellagris.png", 42, 42));
-        btnFavorito.setSelectedIcon(cargarIconoEscalado("/img/estrellaamarilla.png", 42, 42));
-        btnFavorito.setBorderPainted(false);
-        btnFavorito.setContentAreaFilled(false);
-        btnFavorito.setFocusPainted(false);
-        btnFavorito.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
+        btnFavorito.setIcon(crearIconoEstrella(38, 38, false));
+        btnFavorito.setSelectedIcon(crearIconoEstrella(38, 38, true));
+        btnFavorito.setBorderPainted(false); btnFavorito.setContentAreaFilled(false);
+        btnFavorito.setFocusPainted(false); btnFavorito.setCursor(new Cursor(Cursor.HAND_CURSOR));
         JLabel lblFav = new JLabel(texts.getString("update.favorite"));
-        lblFav.setFont(new Font("Arial", Font.BOLD, 14));
+        lblFav.setFont(new Font("Segoe UI", Font.BOLD, 14)); lblFav.setForeground(TEXT_PRIMARY);
+        panelFav.add(btnFavorito); panelFav.add(lblFav); tarjeta.add(panelFav, gbc);
 
-        panelFav.add(btnFavorito);
-        panelFav.add(lblFav);
-
-        root.add(panelFav, gbc);
-
-        /* ===== PANEL INFERIOR ===== */
-        JPanel panelInferior = new JPanel(new BorderLayout());
-        panelInferior.setBorder(BorderFactory.createEmptyBorder(5, 25, 18, 25));
-        panelInferior.setOpaque(false);
-
-        btnCancelar = crearBotonMorado(
-                texts.getString("update.cancel"),
-                new Dimension(120, 32),
-                e -> dispose()
-        );
-
-        btnAceptar = crearBotonMorado(
-                texts.getString("update.accept"),
-                new Dimension(200, 38),
-                e -> validarYActualizar()
-        );
-
+        JPanel pi = new JPanel(new BorderLayout()); pi.setOpaque(false);
+        pi.setBorder(BorderFactory.createEmptyBorder(10, 35, 18, 35));
+        btnCancelar = boton(texts.getString("update.cancel"), new Dimension(130, 36), e -> dispose());
+        btnAceptar  = boton(texts.getString("update.accept"),  new Dimension(210, 42), e -> validarYActualizar());
         getRootPane().setDefaultButton(btnAceptar);
-
-        panelInferior.add(btnCancelar, BorderLayout.WEST);
-        panelInferior.add(btnAceptar, BorderLayout.EAST);
-
-        add(panelInferior, BorderLayout.SOUTH);
-
+        pi.add(btnCancelar, BorderLayout.WEST); pi.add(btnAceptar, BorderLayout.EAST);
+        fondo.add(pi, BorderLayout.SOUTH);
         SwingUtilities.invokeLater(() -> requestFocusInWindow());
     }
 
-    /**
-     * Crea un campo de texto con el estilo visual común de la aplicación.
-     *
-     * @return campo de texto configurado
-     */
-    private JTextField crearCampoTexto() {
-        JTextField campo = new JTextField();
-        campo.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-        campo.setPreferredSize(new Dimension(260, 34));
-        return campo;
+    private JLabel crearLabel(String texto, Font fuente) {
+        JLabel l = new JLabel(texto); l.setFont(fuente); l.setForeground(TEXT_SECONDARY); return l;
     }
 
-    /**
-     * Activa un comportamiento de placeholder editable en un campo de texto.
-     *
-     * @param campo campo de texto
-     * @param valorInicial valor inicial que actúa como placeholder
-     */
-    private void activarPlaceholderEditable(JTextField campo, String valorInicial) {
+    private JTextField crearCampo() {
+        JTextField c = new JTextField(); c.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        c.setPreferredSize(new Dimension(340, 34)); c.setBackground(FIELD_BG);
+        c.setForeground(TEXT_PRIMARY); c.setCaretColor(TEXT_PRIMARY);
+        c.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(SEPARATOR),
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+        return c;
+    }
 
-        campo.setText(valorInicial);
-        campo.setForeground(Color.BLACK);
+    private void estilizarCombo(JComboBox<?> combo) {
+        combo.setFont(new Font("Segoe UI", Font.PLAIN, 14)); combo.setPreferredSize(new Dimension(340, 34));
+        combo.setBackground(FIELD_BG); combo.setForeground(TEXT_PRIMARY);
+    }
 
-        campo.addFocusListener(new java.awt.event.FocusAdapter() {
+    private void cargarPlataformas() {
+        try { PlataformaDAO dao = new PlataformaDAO_imp(); List<Plataforma> ps = dao.fetchAll();
+            for (Plataforma p : ps) cmbPlataforma.addItem(p);
+        } catch (Exception e) { System.err.println("Error plataformas: " + e.getMessage()); }
+    }
 
-            @Override
-            public void focusGained(java.awt.event.FocusEvent e) {
-                if (campo.getText().equals(valorInicial)) {
-                    campo.setText("");
-                }
+    private void limitarCaracteres(JTextArea area, int max) {
+        ((AbstractDocument) area.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+                if (string == null) return; int esp = max - fb.getDocument().getLength();
+                if (esp <= 0) return; super.insertString(fb, offset, string.substring(0, Math.min(string.length(), esp)), attr);
             }
-
-            @Override
-            public void focusLost(java.awt.event.FocusEvent e) {
-                if (campo.getText().trim().isEmpty()) {
-                    campo.setText(valorInicial);
-                }
+            @Override public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                if (text == null) { super.replace(fb, offset, length, null, attrs); return; }
+                int esp = max - (fb.getDocument().getLength() - length); if (esp <= 0) return;
+                super.replace(fb, offset, length, text.substring(0, Math.min(text.length(), esp)), attrs);
             }
         });
     }
 
-    /**
-     * Carga los datos actuales del videojuego en el formulario.
-     */
-    private void cargarDatos() {
-
-        activarPlaceholderEditable(txtTitulo, videojuego.getTitulo());
-        activarPlaceholderEditable(txtPlataforma, videojuego.getPlataforma());
-        activarPlaceholderEditable(txtAnio, String.valueOf(videojuego.getAnio()));
-        activarPlaceholderEditable(
-                txtValoracion,
-                videojuego.getValoracion().toString()
-        );
-
-        btnFavorito.setSelected(eraFavorito);
+    private JPanel crearPanelAnotaciones(JScrollPane scroll, Dimension tamano) {
+        JPanel panel = new JPanel(new BorderLayout(0, 4)); panel.setOpaque(false);
+        panel.setPreferredSize(tamano); panel.setMinimumSize(tamano); panel.add(scroll, BorderLayout.CENTER);
+        lblContadorAnotaciones = new JLabel("0/" + MAX_ANOTACIONES, SwingConstants.RIGHT);
+        lblContadorAnotaciones.setFont(new Font("Segoe UI", Font.PLAIN, 11)); lblContadorAnotaciones.setForeground(TEXT_SECONDARY);
+        panel.add(lblContadorAnotaciones, BorderLayout.SOUTH);
+        txtAnotaciones.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { act(); }
+            @Override public void removeUpdate(DocumentEvent e) { act(); }
+            @Override public void changedUpdate(DocumentEvent e) { act(); }
+            void act() { lblContadorAnotaciones.setText(txtAnotaciones.getText().length() + "/" + MAX_ANOTACIONES); }
+        });
+        return panel;
     }
 
-    /**
-     * Crea un botón con estilo morado personalizado.
-     *
-     * @param texto texto del botón
-     * @param tamaño tamaño del botón
-     * @param action acción a ejecutar al pulsar
-     * @return botón configurado
-     */
-    private JButton crearBotonMorado(
-            String texto,
-            Dimension tamaño,
-            ActionListener action
-    ) {
-        JButton boton = new JButton(texto) {
-            @Override
-            protected void paintComponent(Graphics g) {
+    private void activarPlaceholderEditable(JTextField campo, String valorInicial) {
+        campo.setText(valorInicial); campo.setForeground(TEXT_PRIMARY);
+        campo.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override public void focusGained(java.awt.event.FocusEvent e) { if (campo.getText().equals(valorInicial)) campo.setText(""); }
+            @Override public void focusLost(java.awt.event.FocusEvent e)  { if (campo.getText().trim().isEmpty()) campo.setText(valorInicial); }
+        });
+    }
+
+    private void cargarDatos() {
+        activarPlaceholderEditable(txtTitulo, videojuego.getTitulo());
+        String plataformaActual = videojuego.getPlataforma();
+        for (int i = 0; i < cmbPlataforma.getItemCount(); i++) {
+            if (cmbPlataforma.getItemAt(i).getNombre().equals(plataformaActual)) { cmbPlataforma.setSelectedIndex(i); break; }
+        }
+        String anioStr = !"-".equals(videojuego.getFechaMostrada()) ? videojuego.getFechaMostrada() : "";
+        activarPlaceholderEditable(txtAnio, anioStr);
+        String generoActual = videojuego.getGenero();
+        if (generoActual != null && !generoActual.isEmpty()) {
+            for (int i = 0; i < cmbGenero.getItemCount(); i++) {
+                if (cmbGenero.getItemAt(i).equalsIgnoreCase(generoActual)) { cmbGenero.setSelectedIndex(i); break; }
+            }
+        }
+        if (videojuego.getValoracion() != null) cmbValoracion.setSelectedItem(videojuego.getValoracion().intValue());
+        txtAnotaciones.setText(videojuego.getAnotacion() != null ? videojuego.getAnotacion() : "");
+        lblContadorAnotaciones.setText(txtAnotaciones.getText().length() + "/" + MAX_ANOTACIONES);
+        btnFavorito.setSelected(videojuego.isFavorito());
+    }
+
+    private JButton boton(String texto, Dimension tam, ActionListener a) {
+        JButton b = new JButton(texto) {
+            @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(
-                        RenderingHints.KEY_ANTIALIASING,
-                        RenderingHints.VALUE_ANTIALIAS_ON
-                );
-
-                GradientPaint gp = new GradientPaint(
-                        0, 0, new Color(180, 120, 255),
-                        0, getHeight(), new Color(110, 40, 180)
-                );
-
-                g2.setPaint(gp);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 16, 16);
-                g2.dispose();
-
-                super.paintComponent(g);
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setPaint(new GradientPaint(0, 0, PURPLE_LIGHT, 0, getHeight(), PURPLE_DARK));
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 14, 14); g2.dispose(); super.paintComponent(g);
             }
         };
-
-        boton.setForeground(Color.WHITE);
-        boton.setFont(new Font("Segoe UI Black", Font.PLAIN, 15));
-        boton.setFocusPainted(false);
-        boton.setBorderPainted(false);
-        boton.setContentAreaFilled(false);
-        boton.setOpaque(false);
-        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        boton.setPreferredSize(tamaño);
-
-        boton.addActionListener(action);
-        return boton;
+        b.setForeground(Color.WHITE); b.setFont(new Font("Segoe UI Black", Font.PLAIN, 14));
+        b.setFocusPainted(false); b.setBorderPainted(false); b.setContentAreaFilled(false);
+        b.setOpaque(false); b.setCursor(new Cursor(Cursor.HAND_CURSOR)); b.setPreferredSize(tam); b.addActionListener(a); return b;
     }
 
-    /**
-     * Valida los datos introducidos y actualiza el videojuego.
-     * <p>
-     * También gestiona la inserción o eliminación del videojuego
-     * en favoritos según el estado del botón correspondiente.
-     * </p>
-     */
     private void validarYActualizar() {
-
-        if (txtTitulo.getText().trim().isEmpty()
-                || txtPlataforma.getText().trim().isEmpty()
-                || txtAnio.getText().trim().isEmpty()
-                || txtValoracion.getText().trim().isEmpty()) {
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    texts.getString("update.error.empty")
-            );
-            return;
-        }
-
-        int opcion = JOptionPane.showConfirmDialog(
-                this,
-                texts.getString("update.confirm"),
-                texts.getString("update.confirm.title"),
-                JOptionPane.YES_NO_OPTION
-        );
-
-        if (opcion != JOptionPane.YES_OPTION) return;
-
+        if (txtTitulo.getText().trim().isEmpty() || txtAnio.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, texts.getString("update.error.empty")); return; }
+        int op = JOptionPane.showConfirmDialog(this, texts.getString("update.confirm"),
+                texts.getString("update.confirm.title"), JOptionPane.YES_NO_OPTION);
+        if (op != JOptionPane.YES_OPTION) return;
         try {
             videojuego.setTitulo(txtTitulo.getText().trim());
-            videojuego.setPlataforma(txtPlataforma.getText().trim());
-            videojuego.setAnio(Integer.parseInt(txtAnio.getText().trim()));
-            videojuego.setValoracion(new BigDecimal(txtValoracion.getText().trim()));
-
-            videojuegoDAO.update(videojuego);
-
-            boolean ahoraFavorito = btnFavorito.isSelected();
-
-            if (ahoraFavorito && !eraFavorito) {
-                Favorito f = new Favorito();
-                f.setUsuarioId(usuario);
-                f.setVideojuegoId(videojuego);
-                f.setFechaAnadido(new Date());
-                favoritoDAO.insert(f);
-
-            } else if (!ahoraFavorito && eraFavorito) {
-                favoritoDAO.deleteByUsuarioYVideojuego(
-                        usuario.getId(),
-                        videojuego.getId()
-                );
+            Plataforma plat = (Plataforma) cmbPlataforma.getSelectedItem();
+            if (plat != null) videojuego.setPlataforma(plat.getNombre());
+            try { videojuego.setAnio(normalizarFecha(txtAnio.getText().trim())); }
+            catch (Exception ex) {
+                System.out.println("[DEBUG] Formato de fecha invalido al actualizar videojuego: " + txtAnio.getText().trim());
+                JOptionPane.showMessageDialog(this, texts.getString("insert.error.year"));
+                return;
             }
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    texts.getString("update.success"),
-                    texts.getString("update.success.title"),
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-
+            videojuego.setValoracion(new BigDecimal((Integer) cmbValoracion.getSelectedItem()));
+            String gen = (String) cmbGenero.getSelectedItem(); videojuego.setGenero(gen != null ? gen : "");
+            videojuego.setAnotacion(txtAnotaciones.getText().trim()); videojuego.setFavorito(btnFavorito.isSelected());
+            videojuegoDAO.update(videojuego);
+            JOptionPane.showMessageDialog(this, texts.getString("update.success"),
+                    texts.getString("update.success.title"), JOptionPane.INFORMATION_MESSAGE);
             dispose();
-
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    texts.getString("update.error.generic"),
-                    texts.getString("update.error.title"),
-                    JOptionPane.ERROR_MESSAGE
-            );
+            JOptionPane.showMessageDialog(this, texts.getString("update.error.generic"),
+                    texts.getString("update.error.title"), JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    /**
-     * Carga y escala un icono desde los recursos del proyecto.
-     *
-     * @param ruta ruta del icono
-     * @param ancho ancho deseado
-     * @param alto alto deseado
-     * @return icono escalado
-     */
-    private ImageIcon cargarIconoEscalado(String ruta, int ancho, int alto) {
-        ImageIcon icono = new ImageIcon(getClass().getResource(ruta));
-        Image img = icono.getImage().getScaledInstance(ancho, alto, Image.SCALE_SMOOTH);
+    private String normalizarFecha(String input) {
+        if (input.matches("\\d{2}/\\d{2}/\\d{4}")) {
+            LocalDate f = LocalDate.parse(input, FORMATO_FECHA);
+            return f.format(FORMATO_FECHA);
+        }
+        throw new IllegalArgumentException("La fecha debe usar dd/MM/yyyy");
+    }
+
+    private Icon crearIconoEstrella(int ancho, int alto, boolean selected) {
+        BufferedImage img = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = img.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        double cx = ancho / 2.0, cy = alto / 2.0;
+        double rExt = Math.min(ancho, alto) * 0.46, rInt = rExt * 0.42;
+        Path2D star = new Path2D.Double();
+        for (int i = 0; i < 10; i++) {
+            double angle = Math.toRadians(-90 + i * 36);
+            double r = (i % 2 == 0) ? rExt : rInt;
+            double x = cx + Math.cos(angle) * r, y = cy + Math.sin(angle) * r;
+            if (i == 0) star.moveTo(x, y); else star.lineTo(x, y);
+        }
+        star.closePath();
+        g2.setColor(selected ? new Color(255, 210, 50) : new Color(180, 180, 180));
+        g2.fill(star);
+        g2.setStroke(new BasicStroke(1.5f));
+        g2.setColor(selected ? new Color(190, 140, 10) : new Color(120, 120, 120));
+        g2.draw(star);
+        g2.dispose();
         return new ImageIcon(img);
     }
 }

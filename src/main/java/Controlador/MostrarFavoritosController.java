@@ -4,9 +4,10 @@
  */
 package Controlador;
 
-import Modelo.DAO.Imp.FavoritoDAO_imp;
-import Modelo.Favorito;
+import Modelo.DAO.Imp.VideojuegoDAO_imp;
+import Modelo.DAO.VideojuegoDAO;
 import Modelo.Usuario;
+import Modelo.Videojuego;
 import Vista.MenuPrincipalVista;
 import Vista.MostrarFavoritosVista;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
 /**
  * Controlador encargado de gestionar los videojuegos marcados como favoritos.
  * <p>
- * Permite obtener los favoritos del usuario, eliminar un favorito concreto
+ * Permite obtener los favoritos del usuario, quitar un favorito concreto
  * y gestionar la navegación entre la vista de favoritos y el menú principal.
  * </p>
  *
@@ -34,22 +35,22 @@ public class MostrarFavoritosController {
     private MostrarFavoritosVista vista;
 
     /**
-     * DAO para el acceso a datos de favoritos.
+     * DAO para el acceso a datos de videojuegos.
      */
-    private FavoritoDAO_imp favoritoDAO;
+    private VideojuegoDAO videojuegoDAO;
 
     /**
      * Constructor del controlador.
      * <p>
-     * Inicializa el usuario y crea la implementación del DAO de favoritos
+     * Inicializa el usuario y crea la implementación del DAO de videojuegos
      * necesaria para acceder a la base de datos.
      * </p>
      *
      * @param usuario usuario autenticado
      */
     public MostrarFavoritosController(Usuario usuario) {
-        this.usuario =usuario;
-        this.favoritoDAO = new FavoritoDAO_imp();
+        this.usuario = usuario;
+        this.videojuegoDAO = new VideojuegoDAO_imp();
     }
 
     /**
@@ -63,24 +64,29 @@ public class MostrarFavoritosController {
 
     /**
      * Obtiene la lista de videojuegos marcados como favoritos por el usuario.
+     * <p>
+     * Filtra directamente por el campo booleano {@code favorito} de la
+     * tabla videojuegos, sin necesidad de tabla separada.
+     * </p>
      *
-     * @return lista de favoritos del usuario
+     * @return lista de videojuegos favoritos del usuario
      */
-    public List<Favorito> obtenerFavoritos() {
-        return favoritoDAO.fetchByUsuario(usuario.getId());
+    public List<Videojuego> obtenerFavoritos() {
+        return videojuegoDAO.fetchFavoritosByUsuario(usuario.getId());
     }
 
     /**
-     * Elimina un videojuego de la lista de favoritos.
+     * Quita un videojuego de la lista de favoritos.
      * <p>
-     * Borra el favorito de la base de datos y recarga el listado en la vista
-     * para reflejar los cambios realizados.
+     * Cambia el campo {@code favorito} a false y actualiza el registro
+     * en la base de datos. Luego recarga el listado en la vista.
      * </p>
      *
-     * @param favorito favorito a eliminar
+     * @param videojuego videojuego al que quitar el favorito
      */
-    public void quitarFavorito(Favorito favorito) {
-        favoritoDAO.delete(favorito.getId());
+    public void quitarFavorito(Videojuego videojuego) {
+        videojuego.setFavorito(false);
+        videojuegoDAO.update(videojuego);
         vista.cargarFavoritos();
     }
 
@@ -95,4 +101,3 @@ public class MostrarFavoritosController {
         vista.dispose();
     }
 }
-

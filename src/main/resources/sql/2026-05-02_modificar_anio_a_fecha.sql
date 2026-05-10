@@ -1,0 +1,2 @@
+ALTER TABLE videojuegos
+MODIFY COLUMN anio VARCHAR(10) NULL;

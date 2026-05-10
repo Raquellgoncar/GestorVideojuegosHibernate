@@ -7,6 +7,8 @@ package App;
 import Vista.LoginVista;
 import com.formdev.flatlaf.FlatLightLaf;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import java.util.ResourceBundle;
 
 
 /**
@@ -32,10 +34,20 @@ public class CheckPoint {
      * @param args argumentos de línea de comandos (no utilizados)
      */
     public static void main(String[] args) {
-        // Configuración del tema visual de la aplicación
         FlatLightLaf.setup();
-
-        // Lanzamiento de la ventana de login en el hilo de Swing
+        aplicarIdiomaBotones();
         SwingUtilities.invokeLater(() -> new LoginVista().setVisible(true));
+    }
+
+    /**
+     * Aplica los textos de los botones de JOptionPane según el idioma activo.
+     * Debe llamarse al arrancar y cada vez que cambie el idioma.
+     */
+    public static void aplicarIdiomaBotones() {
+        ResourceBundle texts = ResourceBundle.getBundle("i18n.messages");
+        UIManager.put("OptionPane.yesButtonText",    texts.getString("dialog.yes"));
+        UIManager.put("OptionPane.noButtonText",     texts.getString("dialog.no"));
+        UIManager.put("OptionPane.cancelButtonText", texts.getString("dialog.cancel"));
+        UIManager.put("OptionPane.okButtonText",     texts.getString("dialog.ok"));
     }
 }

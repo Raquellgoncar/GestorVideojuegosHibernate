@@ -4,11 +4,8 @@
  */
 package Controlador;
 
-import Modelo.DAO.FavoritoDAO;
-import Modelo.DAO.Imp.FavoritoDAO_imp;
 import Modelo.DAO.Imp.VideojuegoDAO_imp;
 import Modelo.DAO.VideojuegoDAO;
-import Modelo.Favorito;
 import Modelo.Usuario;
 import Modelo.Videojuego;
 import Vista.EliminarVideojuegoVista;
@@ -18,9 +15,8 @@ import java.util.List;
 /**
  * Controlador encargado de gestionar la eliminación de videojuegos.
  * <p>
- * Permite obtener los videojuegos y favoritos del usuario, así como
- * eliminar un videojuego asegurando previamente la eliminación de sus
- * referencias en la tabla de favoritos.
+ * Permite obtener los videojuegos del usuario y eliminar un videojuego
+ * de la base de datos.
  * </p>
  *
  * @author Raquel
@@ -44,14 +40,9 @@ public class EliminarVideojuegoController {
     private VideojuegoDAO videojuegoDAO;
 
     /**
-     * DAO para el acceso a datos de favoritos.
-     */
-    private FavoritoDAO favoritoDAO;
-
-    /**
      * Constructor del controlador.
      * <p>
-     * Inicializa el usuario y crea las implementaciones de los DAO necesarios
+     * Inicializa el usuario y crea la implementación del DAO necesario
      * para acceder a la base de datos.
      * </p>
      *
@@ -60,7 +51,6 @@ public class EliminarVideojuegoController {
     public EliminarVideojuegoController(Usuario usuario) {
         this.usuario = usuario;
         this.videojuegoDAO = new VideojuegoDAO_imp();
-        this.favoritoDAO = new FavoritoDAO_imp();
     }
 
     /**
@@ -83,29 +73,27 @@ public class EliminarVideojuegoController {
 
     /**
      * Obtiene la lista de videojuegos marcados como favoritos por el usuario.
+     * <p>
+     * Ahora se obtienen directamente desde la tabla videojuegos
+     * filtrando por el campo booleano {@code favorito}.
+     * </p>
      *
-     * @return lista de favoritos del usuario
+     * @return lista de videojuegos favoritos del usuario
      */
-    public List<Favorito> obtenerFavoritos() {
-        return favoritoDAO.fetchByUsuario(usuario.getId());
+    public List<Videojuego> obtenerFavoritos() {
+        return videojuegoDAO.fetchFavoritosByUsuario(usuario.getId());
     }
 
     /**
      * Elimina un videojuego de la base de datos.
      * <p>
-     * Antes de eliminar el videojuego, se eliminan todas las referencias
-     * asociadas a dicho videojuego en la tabla de favoritos para mantener
-     * la integridad de los datos.
+     * Al tener la FK con ON DELETE CASCADE y no existir ya tabla de favoritos
+     * separada, simplemente se elimina el videojuego directamente.
      * </p>
      *
      * @param idVideojuego identificador del videojuego a eliminar
      */
     public void eliminarVideojuego(int idVideojuego) {
-
-        favoritoDAO.fetchByUsuario(usuario.getId()).stream()
-                .filter(f -> f.getVideojuegoId().getId().equals(idVideojuego))
-                .forEach(f -> favoritoDAO.delete(f.getId()));
-
         videojuegoDAO.delete(idVideojuego);
     }
 

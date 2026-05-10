@@ -50,6 +50,9 @@ public class MenuPrincipalVista extends JFrame {
     /** Controlador asociado a la vista */
     private MenuPrincipalController controller;
 
+    /** Estado de ventana compartido entre todas las vistas principales */
+    public static int estadoVentana = JFrame.MAXIMIZED_BOTH;
+
     /**
      * Constructor del menú principal.
      *
@@ -67,7 +70,9 @@ public class MenuPrincipalVista extends JFrame {
         setSize(700, 500);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setResizable(true);
+        setResizable(false);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        addWindowStateListener(e -> mantenerMaximizada());
 
         var urlNormal = getClass().getResource("/img/images.jpg");
         var urlGif = getClass().getResource("/img/fondoMenu.gif");
@@ -113,7 +118,7 @@ public class MenuPrincipalVista extends JFrame {
         lblTitulo = new JLabel(texts.getString("menu.title"));
         lblTitulo.setForeground(Color.WHITE);
         lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
-        lblTitulo.setToolTipText("Menú principal de la aplicación");
+        lblTitulo.setToolTipText(texts.getString("menu.tooltip.title"));
 
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -128,19 +133,19 @@ public class MenuPrincipalVista extends JFrame {
         panelCentral.setBorder(BorderFactory.createEmptyBorder(20, 40, 40, 40));
 
         btnMostrar = crearBoton(texts.getString("menu.show"));
-        btnMostrar.setToolTipText("Ver el listado de videojuegos");
+        btnMostrar.setToolTipText(texts.getString("menu.tooltip.show"));
         btnMostrar.addActionListener(e -> controller.mostrarListado());
 
         btnModificar = crearBoton(texts.getString("menu.modify"));
-        btnModificar.setToolTipText("Modificar o eliminar videojuegos");
+        btnModificar.setToolTipText(texts.getString("menu.tooltip.modify"));
         btnModificar.addActionListener(e -> controller.modificarVideojuegos());
 
         btnFavoritos = crearBoton(texts.getString("menu.favorites"));
-        btnFavoritos.setToolTipText("Ver tus videojuegos favoritos");
+        btnFavoritos.setToolTipText(texts.getString("menu.tooltip.favorites"));
         btnFavoritos.addActionListener(e -> controller.mostrarFavoritos());
 
         btnPerfil = crearBoton(texts.getString("menu.profile"));
-        btnPerfil.setToolTipText("Ver y editar tu perfil");
+        btnPerfil.setToolTipText(texts.getString("menu.tooltip.profile"));
         btnPerfil.addActionListener(e -> controller.mostrarPerfil());
 
         panelCentral.add(btnMostrar);
@@ -158,9 +163,9 @@ public class MenuPrincipalVista extends JFrame {
         gbc.anchor = GridBagConstraints.CENTER;
         root.add(panelCentral, gbc);
 
-        btnAtras = new JButton(texts.getString("menu.back"));
+        btnAtras = crearBotonBlancoRedondeado(texts.getString("menu.back"));
         btnAtras.setFocusPainted(false);
-        btnAtras.setToolTipText("Cerrar sesión y volver al login");
+        btnAtras.setToolTipText(texts.getString("menu.tooltip.back"));
         btnAtras.addActionListener(e -> controller.cerrarSesion());
 
         gbc = new GridBagConstraints();
@@ -173,6 +178,17 @@ public class MenuPrincipalVista extends JFrame {
         root.add(btnAtras, gbc);
 
         adaptarTamano();
+    }
+
+    public static void mantenerMaximizada(JFrame ventana) {
+        if ((ventana.getExtendedState() & JFrame.MAXIMIZED_BOTH) != JFrame.MAXIMIZED_BOTH) {
+            SwingUtilities.invokeLater(() -> ventana.setExtendedState(JFrame.MAXIMIZED_BOTH));
+        }
+        estadoVentana = JFrame.MAXIMIZED_BOTH;
+    }
+
+    private void mantenerMaximizada() {
+        mantenerMaximizada(this);
     }
 
     /**
@@ -199,17 +215,19 @@ public class MenuPrincipalVista extends JFrame {
         cTitulo.insets = new Insets(margenSuperiorTitulo, 20, 10, 20);
         gbl.setConstraints(lblTitulo, cTitulo);
 
-        int anchoBoton = (int) (250 * escala);
-        int altoBoton = (int) (50 * escala);
+        int anchoBoton = (int) (160 * escala);
+        int altoBoton = (int) (34 * escala);
         Dimension tamBoton = new Dimension(anchoBoton, altoBoton);
 
         Font fuenteBoton = new Font(
                 "Segoe UI Black",
                 Font.PLAIN,
-                (int) (17 * escala)
+                (int) (11 * escala)
         );
 
         for (JButton b : new JButton[]{btnMostrar, btnModificar, btnFavoritos, btnPerfil}) {
+            b.setMinimumSize(tamBoton);
+            b.setPreferredSize(tamBoton);
             b.setMaximumSize(tamBoton);
             b.setFont(fuenteBoton);
         }
@@ -229,7 +247,7 @@ public class MenuPrincipalVista extends JFrame {
         }
 
         btnAtras.setPreferredSize(
-                new Dimension((int) (120 * escala), (int) (28 * escala))
+                new Dimension((int) (85 * escala), (int) (22 * escala))
         );
         btnAtras.setFont(fuenteBoton);
 
@@ -288,6 +306,32 @@ public class MenuPrincipalVista extends JFrame {
                 repaint();
             }
         });
+
+        return boton;
+    }
+
+    private JButton crearBotonBlancoRedondeado(String texto) {
+
+        JButton boton = new JButton(texto) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                g2.setColor(Color.WHITE);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                g2.dispose();
+
+                super.paintComponent(g);
+            }
+        };
+
+        boton.setForeground(new Color(110, 40, 180));
+        boton.setFocusPainted(false);
+        boton.setBorderPainted(false);
+        boton.setContentAreaFilled(false);
+        boton.setOpaque(false);
+        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         return boton;
     }

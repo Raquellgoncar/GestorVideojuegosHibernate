@@ -72,6 +72,31 @@ public class ListadoVideojuegosController {
     }
 
     /**
+     * Obtiene la lista de videojuegos marcados como favoritos por el usuario.
+     * <p>
+     * Ahora se consulta directamente el campo booleano {@code favorito}
+     * de la tabla videojuegos, sin necesidad de tabla separada ni Set de IDs.
+     * En la vista basta con llamar a {@code videojuego.isFavorito()} para
+     * saber si mostrar el indicador visual de favorito.
+     * </p>
+     *
+     * @return lista de videojuegos favoritos del usuario
+     */
+    public List<Videojuego> obtenerFavoritos() {
+        return videojuegoDAO.fetchFavoritosByUsuario(usuario.getId());
+    }
+
+    /**
+     * Quita un videojuego de favoritos actualizando el campo en la base de datos.
+     *
+     * @param videojuego videojuego al que quitar el favorito
+     */
+    public void quitarFavorito(Videojuego videojuego) {
+        videojuego.setFavorito(false);
+        videojuegoDAO.update(videojuego);
+    }
+
+    /**
      * Vuelve al menú principal de la aplicación.
      * <p>
      * Abre la ventana del menú principal y cierra la vista actual.
