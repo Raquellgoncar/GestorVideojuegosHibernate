@@ -24,8 +24,8 @@ a través de la API de RAWG.
 ### 1. Base de datos
 
 1. Abre **phpMyAdmin** o el cliente MySQL de tu preferencia.
-2. Ejecuta el script de creación incluido en la carpeta `/sql`:
-   Impórtalo desde phpMyAdmin con **Importar → Seleccionar archivo**.
+2. Importa el script incluido en la carpeta `/sql`:
+   phpMyAdmin → **Importar → Seleccionar archivo → script_estructura_datos.sql**
 3. Verifica que MySQL está activo en `localhost:3306` con usuario `root`
    y sin contraseña. Esta es la configuración por defecto de la aplicación.
    Si tu MySQL usa otro usuario o contraseña, contacta con la autora
@@ -43,9 +43,18 @@ a través de la API de RAWG.
 
 ## Ejecución
 
-1. Clic derecho sobre el proyecto → **Run**.
+### Opción A — Desde NetBeans
+1. Clic derecho sobre el proyecto → **Run** o pulsa **F6**.
 2. Se abrirá la pantalla de login de CheckPoint.
 3. Usa una de las cuentas de prueba o regístrate con una cuenta nueva.
+
+### Opción B — Desde el ejecutable
+1. Haz **Clean and Build** en NetBeans para generar el JAR.
+2. Localiza el archivo `CheckPoint.jar` en la carpeta `/target`.
+3. Ejecútalo con doble clic.
+4. Usa una de las cuentas de prueba o regístrate con una cuenta nueva.
+
+> **Nota:** MySQL debe estar activo antes de ejecutar la aplicación.
 
 ---
 
